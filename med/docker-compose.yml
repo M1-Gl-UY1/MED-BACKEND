@@ -1,0 +1,16 @@
+services:
+  postgres:
+    image: postgres:16
+    container_name: postgres_spring
+    restart: always
+    environment:
+      POSTGRES_DB: med_db
+      POSTGRES_USER: med_user
+      POSTGRES_PASSWORD: med_password
+    ports:
+      - "5431:5432"
+    volumes:
+      - pgdata:/var/lib/postgresql/data
+
+volumes:
+  pgdata:
