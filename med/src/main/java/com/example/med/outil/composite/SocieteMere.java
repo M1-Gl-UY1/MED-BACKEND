@@ -1,4 +1,4 @@
-package com.example.med.model.utilisateur.composite;
+package com.example.med.outil.composite;
 import com.example.med.model.utilisateur.Societe;
 import lombok.Data;
 import java.util.List;
