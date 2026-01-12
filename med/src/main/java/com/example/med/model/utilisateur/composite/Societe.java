@@ -1,4 +1,5 @@
-package com.example.med.model.utilisateur;
+package com.example.med.model.utilisateur.composite;
+import com.example.med.model.utilisateur.Utilisateur;
 import jakarta.persistence.*;
 import lombok.Data;
 import lombok.EqualsAndHashCode;
@@ -8,7 +9,7 @@ import java.util.List;
 @Entity
 @Data
 @EqualsAndHashCode(callSuper = true)
-public class Societe extends Utilisateur{
+public class Societe extends Utilisateur {
 
     private String nom;
 
