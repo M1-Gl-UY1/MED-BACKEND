@@ -1,5 +1,4 @@
-package com.example.med.model.utilisateur.composite;
-import com.example.med.model.utilisateur.Utilisateur;
+package com.example.med.model.utilisateur;
 import jakarta.persistence.*;
 import lombok.Data;
 import lombok.EqualsAndHashCode;
