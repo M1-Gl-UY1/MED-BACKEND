@@ -19,7 +19,7 @@ public class VehiculeEssenceF implements VehiculeFactory {
 
     @Override
     public VehiculeElectricF commanderVehicule(String typVehicule) {
-        return null;   
+        return null;
     }
     @Override
     public VehiculeEssenceF commanderVehiculeEssence(String typVehicule) {
