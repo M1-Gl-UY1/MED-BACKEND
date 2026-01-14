@@ -1,4 +1,4 @@
-package com.example.med.Abstract_Factory.Automobile;
+package com.example.med.outil.Abstract_Factory.Automobile;
 
 import com.example.med.model.catalogue.Vehicule;
 
