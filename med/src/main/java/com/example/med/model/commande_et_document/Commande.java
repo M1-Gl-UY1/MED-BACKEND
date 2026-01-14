@@ -4,13 +4,18 @@ import com.example.med.model.panier.StatutPanier;
 import com.example.med.model.panier.TypeMethodePaiement;
 import com.example.med.model.utilisateur.Utilisateur;
 import jakarta.persistence.*;
+import lombok.AllArgsConstructor;
 import lombok.Data;
+import lombok.NoArgsConstructor;
 
 import java.time.LocalDate;
+import java.util.List;
 
 @Entity
 @Data
-public class Commande {
+@NoArgsConstructor
+@AllArgsConstructor
+public abstract class Commande {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     @Column(name = "id_commande")
@@ -34,7 +39,18 @@ public class Commande {
     @JoinColumn(name = "id_utilisateur")
     private Utilisateur utilisateur;
 
+    @OneToMany
+    @JoinColumn(name = "id_ligne_commande")
+    private List<LigneCommande> lignesCommandes;
+
     @OneToOne
     @JoinColumn(name = "id_liasse_documents")
     private LiasseDocuments liasseDocuments;
+
+    public void valider() {
+        if (statut != StatutPanier.ACTIF) {
+            throw new IllegalStateException("Commande non valide");
+        }
+        this.statut = StatutPanier.VALIDEE;
+    }
 }

@@ -11,7 +11,6 @@ import java.time.LocalDate;
 @EqualsAndHashCode(callSuper = true)
 public class Client extends Utilisateur{
 
-    private String nom;
     private String prenom;
     private String sexe;
 
