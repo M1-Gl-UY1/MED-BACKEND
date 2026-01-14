@@ -23,6 +23,7 @@ public class Vehicule implements VehiculeComposant, Sujet {
     private boolean solde;
     private double facteurReduction;
     private int annee;
+    private String imageUrl;
 
     @Enumerated(EnumType.STRING)
     private TypeEngine engine;
