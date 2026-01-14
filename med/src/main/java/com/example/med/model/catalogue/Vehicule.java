@@ -30,5 +30,4 @@ public class Vehicule {
     @ManyToOne
     @JoinColumn(name = "id_stock")
     private Stock stock;
-
 }
