@@ -1,4 +1,4 @@
-package com.example.med.Abstract_Factory.Scooter;
+package com.example.med.outil.Abstract_Factory.Scooter;
 import com.example.med.model.catalogue.Vehicule;
 
 public abstract class Scooter extends Vehicule {
