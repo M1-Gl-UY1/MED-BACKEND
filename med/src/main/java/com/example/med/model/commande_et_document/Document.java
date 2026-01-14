@@ -1,7 +1,8 @@
 package com.example.med.model.commande_et_document;
 
 import jakarta.persistence.*;
-
+import lombok.Data;
+@Data
 public class Document {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
