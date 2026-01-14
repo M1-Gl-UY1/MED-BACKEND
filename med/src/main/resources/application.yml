@@ -9,3 +9,12 @@ spring:
     hibernate:
       ddl-auto: update
     show-sql: true
+
+# Définit le préfixe de toutes les routes générées par Data REST
+  data:
+    rest:
+          base-path: /api
+
+# Pour que Swagger affiche aussi les routes de Data REST
+springdoc:
+  :show-data-rest: true

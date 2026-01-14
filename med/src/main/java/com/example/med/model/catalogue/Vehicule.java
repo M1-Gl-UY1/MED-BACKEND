@@ -14,6 +14,8 @@ public class Vehicule {
     private String nom;
     private String model;
     private String marque;
+    private boolean solde;
+    private double facteurReduction;
     private int annee;
 
     @Enumerated(EnumType.STRING)

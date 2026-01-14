@@ -2,6 +2,8 @@ package com.example.med.model.commande_et_document;
 
 import jakarta.persistence.*;
 import lombok.Data;
+
+@Entity
 @Data
 public class Document {
     @Id
