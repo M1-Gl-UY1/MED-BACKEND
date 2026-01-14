@@ -5,26 +5,28 @@ import lombok.Data;
 
 @Entity
 @Data
-@Inheritance(strategy = InheritanceType.SINGLE_TABLE) // Très important pour l'héritage en BDD
-@DiscriminatorColumn(name = "type_precis") // Colonne qui dira si c'est une Auto ou un Scooter
-public abstract class Vehicule {
+public class Vehicule {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
+    @Column(name = "id_vehicule")
     private long idVehicule;
 
     private String nom;
-    private String modele;
+    private String model;
     private String marque;
     private int annee;
-    private double prixBase;
-
-    // On garde tes Enums pour la logique métier
-    @Enumerated(EnumType.STRING)
-    private TypeEngine engine; 
 
     @Enumerated(EnumType.STRING)
-    private TypeVehicule type;
+    private TypeEngine engine;
 
-    // Méthode abstraite que tes sous-classes devront implémenter
-    public abstract void afficherDetails();
+    @Enumerated(EnumType.STRING)
+    private  TypeVehicule type;
+
+    @Column(name = "prix_base")
+    private  double prixBase;
+
+    @ManyToOne
+    @JoinColumn(name = "id_stock")
+    private Stock stock;
+
 }
