@@ -24,3 +24,4 @@ public class LiasseBuilderPDF extends LiasseBuilder {
         // Logique similaire pour immatriculation
     }
 }
+
