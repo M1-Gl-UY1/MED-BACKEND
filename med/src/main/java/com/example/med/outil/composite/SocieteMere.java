@@ -1,12 +1,28 @@
 package com.example.med.outil.composite;
 import com.example.med.model.utilisateur.Societe;
-import lombok.Data;
+import jakarta.persistence.*;
+import lombok.Getter;
+import lombok.Setter;
+
 import java.util.List;
 
-@Data
-public class SocieteMere {
-    private List<Societe> filiales;
+@Entity
+@Getter
+@Setter
+public class SocieteMere extends Societe{
 
+
+    @OneToMany
+    @JoinTable(
+            name = "constituer_ss",
+            joinColumns = @JoinColumn(name = "societe_mere_id"),
+            inverseJoinColumns = @JoinColumn(name = "societe_fille_id"),
+            uniqueConstraints = @UniqueConstraint(
+                    columnNames = "societe_fille_id"
+            )
+    )
+    private List<Societe> filiales;
+    
     public boolean ajouterFiliale(Societe filiale){
         try {
             filiales.add(filiale);
