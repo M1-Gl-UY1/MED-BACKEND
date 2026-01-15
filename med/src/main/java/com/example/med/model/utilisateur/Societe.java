@@ -14,9 +14,4 @@ public class Societe extends Utilisateur {
 
     @Column(name = "numero_taxe")
     private String numeroTaxe;
-
-    @ManyToOne
-    @JoinColumn(name = "id_utilisateur_parent")
-    private List<Societe> societeMere;
-
 }
