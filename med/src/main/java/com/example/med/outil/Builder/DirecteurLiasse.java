@@ -1,5 +1,7 @@
 package com.example.med.outil.Builder;
 
+import com.example.med.model.commande_et_document.Commande;
+
 public class DirecteurLiasse {
     protected LiasseBuilder builder;
 
@@ -7,10 +9,13 @@ public class DirecteurLiasse {
         this.builder = builder;
     }
 
-    public void construireLiasse(String nomClient, String detailsVehicule) {
-        builder.creerNouvelleLiasse();
-        builder.construireBonCommande("Bon pour " + nomClient + " : " + detailsVehicule);
-        builder.construireCertificatCession("Cession véhicule à " + nomClient);
-        builder.construireDemandeImmatriculation("Immatriculation véhicule : " + detailsVehicule);
+    public void construireLiasse(Commande commande) {
+        // On initialise la liasse avec la commande
+        builder.creerNouvelleLiasse(commande);
+        
+        // On lance la fabrication des 3 documents obligatoires
+        builder.construireBonCommande("Bon de Commande Officiel");
+        builder.construireCertificatCession("Certificat de Cession de Véhicule");
+        builder.construireDemandeImmatriculation("Demande d'Immatriculation Préfecture");
     }
 }
