@@ -1,27 +1,32 @@
 package com.example.med.outil.Builder;
 
-import com.example.med.model.commande_et_document.*;
-import java.io.FileWriter;
-import java.io.File;
-import java.io.IOException;
+import com.example.med.model.commande_et_document.Document;
+import com.example.med.model.commande_et_document.TypeDocument;
+import com.example.med.model.commande_et_document.TypeFormat;
+import com.example.med.outil.adapter.DocumentHtml;
 
 public class LiasseBuilderHTML extends LiasseBuilder {
 
     @Override
-    public void construireBonCommande(String contenu) {
-        String url = genererFichierHTML("BonCommande", contenu);
+    public void construireBonCommande(String titre) {
+        DocumentHtml adapter = new DocumentHtml(titre);
+        adapter.preparerDonnees(this.commandeRef); // Utilise la commande stockée dans le parent
         
+        String url = adapter.imprimer(); 
+
         Document doc = new Document();
         doc.setType(TypeDocument.BON_COMMANDE);
-        doc.setFormat(TypeFormat.HTML); // Format HTML
+        doc.setFormat(TypeFormat.HTML);
         doc.setUrl(url);
         this.liasse.ajouterDocument(doc);
     }
 
     @Override
-    public void construireCertificatCession(String contenu) {
-        String url = genererFichierHTML("CertificatCession", contenu);
-        
+    public void construireCertificatCession(String titre) {
+        DocumentHtml adapter = new DocumentHtml(titre);
+        adapter.preparerDonnees(this.commandeRef);
+        String url = adapter.imprimer();
+
         Document doc = new Document();
         doc.setType(TypeDocument.CERTIFICAT_CESSION);
         doc.setFormat(TypeFormat.HTML);
@@ -30,29 +35,15 @@ public class LiasseBuilderHTML extends LiasseBuilder {
     }
 
     @Override
-    public void construireDemandeImmatriculation(String contenu) {
-        String url = genererFichierHTML("DemandeImmat", contenu);
-        
+    public void construireDemandeImmatriculation(String titre) {
+        DocumentHtml adapter = new DocumentHtml(titre);
+        adapter.preparerDonnees(this.commandeRef);
+        String url = adapter.imprimer();
+
         Document doc = new Document();
         doc.setType(TypeDocument.DEMANDE_IMMATRICULATION);
         doc.setFormat(TypeFormat.HTML);
         doc.setUrl(url);
         this.liasse.ajouterDocument(doc);
-    }
-
-    // Petite méthode utilitaire pour créer un vrai fichier HTML
-    private String genererFichierHTML(String nom, String contenu) {
-        String chemin = "documents/" + nom + "_" + System.currentTimeMillis() + ".html";
-        try {
-            File dir = new File("documents/");
-            if (!dir.exists()) dir.mkdirs();
-            
-            FileWriter writer = new FileWriter(chemin);
-            writer.write("<html><body><h1>" + nom + "</h1><p>" + contenu + "</p></body></html>");
-            writer.close();
-        } catch (IOException e) {
-            e.printStackTrace();
-        }
-        return chemin;
     }
 }
