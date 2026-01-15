@@ -1,5 +1,4 @@
 package com.example.med.outil.Iterator;
-
 import com.example.med.model.catalogue.Vehicule;
 
 public interface Catalogue {
