@@ -2,7 +2,6 @@ package com.example.med.outil.adapter;
 
 import com.example.med.model.commande_et_document.Commande;
 import com.example.med.model.commande_et_document.LigneCommande;
-import com.example.med.model.catalogue.Option;
 import com.itextpdf.kernel.pdf.PdfDocument;
 import com.itextpdf.kernel.pdf.PdfWriter;
 import com.itextpdf.layout.element.Paragraph;
