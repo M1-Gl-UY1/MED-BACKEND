@@ -22,7 +22,10 @@ public abstract class Form {
 
 class test{
     static void main() {
-        Form login = new LoginForm(new WidgetRender());
+        Form login = new LoginForm(new HtmlRender());
+        System.out.println(login.generate());
+
+        login = new LoginForm(new WidgetRender());
         System.out.println(login.generate());
     }
 }
