@@ -40,8 +40,8 @@ public class Vehicule implements VehiculeComposant, Sujet {
 
 
     // utile pour le design pattern decorator
-    public double getPrix(double facteurReduction) {
-        return prixBase;
+    public double getPrix() {
+        return prixBase*facteurReduction;
     }
 
 

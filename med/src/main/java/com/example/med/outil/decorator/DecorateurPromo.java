@@ -13,7 +13,7 @@ public class DecorateurPromo extends DecorateurVehicule{
     }
 
     @Override
-    public double getPrix(double facteurReduction) {
-        return vehicule.getPrixBase()*facteurReduction;
+    public double getPrix() {
+        return vehicule.getPrixBase()*vehicule.getFacteurReduction();
     }
 }

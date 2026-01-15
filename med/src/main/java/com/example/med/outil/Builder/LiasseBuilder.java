@@ -6,7 +6,7 @@ public abstract class LiasseBuilder {
     protected LiasseDocuments liasse;
 
     public void creerNouvelleLiasse() {
-        liasse = new LiasseDocuments();
+        this.liasse = LiasseDocuments.creerNouvelleInstance();
     }
 
     public LiasseDocuments getLiasse() {
