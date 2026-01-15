@@ -1,4 +1,4 @@
-package com.example.med.controller.vehicule;
+package com.example.med.controller.catalogue;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;

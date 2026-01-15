@@ -1,10 +1,13 @@
 package com.example.med.controller.catalogue;
 
+import com.example.med.dto.VehiculeCreationDTO;
 import com.example.med.model.catalogue.Vehicule;
 import com.example.med.outil.decorator.DecorateurPromo;
 import com.example.med.outil.decorator.VehiculeComposant;
 import com.example.med.repository.VehiculeRepository;
+import com.example.med.service.vehicule.VehiculeService;
 import lombok.RequiredArgsConstructor;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.rest.webmvc.RepositoryRestController;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
@@ -20,6 +23,16 @@ import java.util.Optional;
 public class VehiculeController {
 
     private final VehiculeRepository repository;
+    @Autowired
+    private VehiculeService vehiculeService;
+
+    @PostMapping("/vehicules/")
+    public ResponseEntity <String>createVehicule(@RequestBody VehiculeCreationDTO dto) {
+        //TODO: process POST request
+
+        String resultat = vehiculeService.createVehicule(dto.getEnergie(), dto.getType()); //energie electrique or essence and type auto or scooter from dto
+        return ResponseEntity.ok("Vehicule created successfully");
+    }
 
     // Cette méthode va INTERCEPTER le GET /api/vehicules par défaut
     @GetMapping(path = "/vehicules")
@@ -44,14 +57,14 @@ public class VehiculeController {
         return ResponseEntity.ok(vehicules);
     }
 
-    @PostMapping(path = "/vehicules")
-    public @ResponseBody ResponseEntity<?> createVehicule(@RequestBody Vehicule vehicule) {
-
-        Vehicule saved = repository.save(vehicule);
-        return ResponseEntity
-                .created(URI.create("/api/vehicules/" + saved.getIdVehicule()))
-                .body(saved);
-    }
+//    @PostMapping(path = "/vehicules")
+//    public @ResponseBody ResponseEntity<?> createVehicule(@RequestBody Vehicule vehicule) {
+//
+//        Vehicule saved = repository.save(vehicule);
+//        return ResponseEntity
+//                .created(URI.create("/api/vehicules/" + saved.getIdVehicule()))
+//                .body(saved);
+//    }
 
     @GetMapping(path = "/vehicules/{id}")
     public @ResponseBody ResponseEntity<?> getVehiculeById(@PathVariable Long id) {

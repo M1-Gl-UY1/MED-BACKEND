@@ -7,7 +7,7 @@ import com.example.med.model.commande_et_document.Commande;
 import com.example.med.model.panier.StatutPanier;
 import com.example.med.repository.CommandeRepository;
 import com.example.med.repository.VehiculeRepository;
-import com.example.med.service.CommandeService;
+import com.example.med.service.commande.CommandeService;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
