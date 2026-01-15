@@ -39,8 +39,9 @@ public class LiasseController {
      */
     @PostMapping("/generer-liasse/{format}")
 public ResponseEntity<LiasseDocuments> genererLiasse(
-        @PathVariable String format, 
-        @RequestBody Map<String, String> data) {
+        @PathVariable String format,
+        @RequestBody Map<String, String> data
+    ) {
 
     LiasseBuilder builder;
 
