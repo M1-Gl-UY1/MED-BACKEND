@@ -15,6 +15,8 @@ public class LignePanier {
     @Column(name = "id_ligne_panier")
     private Long idLignePanier;
 
+    private long quantite;
+
     @ManyToOne
     @JoinColumn(name = "id_vehicule")
     private Vehicule vehicule;
@@ -22,6 +24,7 @@ public class LignePanier {
     @ManyToOne
     @JoinColumn(name = "id_panier")
     private Panier panier;
+
 
     @ManyToMany
     @JoinTable(

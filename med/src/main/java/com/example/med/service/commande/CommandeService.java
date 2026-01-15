@@ -1,4 +1,4 @@
-package com.example.med.service;
+package com.example.med.service.commande;
 
 import com.example.med.model.commande_et_document.Commande;
 import com.example.med.model.catalogue.Vehicule;

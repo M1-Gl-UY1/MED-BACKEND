@@ -16,13 +16,14 @@ public class CommandeSoldeVehicule implements CommandeAction {
     @Override
     public void executer() {
         ancienPrix = vehicule.getPrixBase();
-        vehicule.setPrixBase(ancienPrix * (1-tauxReduction));
+        double nouveauPrix = ancienPrix * (1-tauxReduction);
+        vehicule.setPrix(nouveauPrix); //observer notifie
         vehicule.setSolde(true);
     }
 
     @Override
     public void annuler() {
-        vehicule.setPrixBase(ancienPrix);
+        vehicule.setPrix(ancienPrix);
         vehicule.setSolde(false);
     }
 }
