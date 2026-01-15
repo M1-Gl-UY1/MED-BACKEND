@@ -2,7 +2,6 @@ package com.example.med.outil.adapter;
 
 import java.io.File;
 
-
 import com.itextpdf.kernel.pdf.PdfDocument;
 import com.itextpdf.kernel.pdf.PdfWriter;
 import com.itextpdf.layout.element.Paragraph;
