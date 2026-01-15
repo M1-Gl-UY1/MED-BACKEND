@@ -1,4 +1,4 @@
-package com.example.med.Iterator;
+package com.example.med.outil.Iterator;
 
 public interface VehiculeIterator {
     boolean hasNext();
