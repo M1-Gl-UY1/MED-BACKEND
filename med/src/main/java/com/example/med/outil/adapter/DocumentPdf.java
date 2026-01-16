@@ -5,18 +5,18 @@ import com.example.med.model.commande_et_document.Commande;
 /**
  * PATTERN ADAPTER - Adapter (Adaptateur)
  *
- * Adapte le composant technique ComposantPdf à l'interface DocumentInterface.
- * Permet d'utiliser la bibliothèque PDF externe de manière uniforme.
+ * Adapte le composant technique PdfGenerator a l'interface DocumentInterface.
+ * Permet d'utiliser la generation PDF de maniere uniforme.
  *
  * Structure:
- * - Implémente Target (DocumentInterface)
- * - Compose Adaptee (ComposantPdf)
- * - Traduit les appels de l'interface vers le composant adapté
+ * - Target: DocumentInterface (cette interface)
+ * - Adapter: DocumentPdf (cette classe)
+ * - Adaptee: PdfGenerator (composant technique)
  */
 public class DocumentPdf implements DocumentInterface {
 
-    // Composant technique adapté (Adaptee)
-    private ComposantPdf outilPdf = new ComposantPdf();
+    // Composant technique adapte (Adaptee)
+    private PdfGenerator pdfGenerator = new PdfGenerator();
     private String titre;
     private Commande commande;
 
@@ -30,10 +30,10 @@ public class DocumentPdf implements DocumentInterface {
     }
 
     /**
-     * Délègue la génération au composant PDF adapté
+     * Delegue la generation au composant PDF adapte
      */
     @Override
     public String imprimer() {
-        return outilPdf.pdfPrepareAffichage(titre, commande);
+        return pdfGenerator.genererPdfCommande(titre, commande);
     }
 }

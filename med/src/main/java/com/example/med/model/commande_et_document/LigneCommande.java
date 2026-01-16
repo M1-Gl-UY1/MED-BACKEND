@@ -2,6 +2,7 @@ package com.example.med.model.commande_et_document;
 
 import com.example.med.model.catalogue.Option;
 import com.example.med.model.catalogue.Vehicule;
+import com.fasterxml.jackson.annotation.JsonIgnore;
 import jakarta.persistence.*;
 import lombok.Data;
 
@@ -29,6 +30,7 @@ public class LigneCommande {
 
     @ManyToOne
     @JoinColumn(name = "id_commande")
+    @JsonIgnore  // Éviter la récursion infinie Commande -> LigneCommande -> Commande
     private Commande commande;
 
     @ManyToMany

@@ -7,6 +7,7 @@ import lombok.Data;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.stream.Collectors;
 
 /**
  * Entité Véhicule - Représente un véhicule dans le catalogue
@@ -33,6 +34,30 @@ public class Vehicule implements Sujet {
     private int annee;
     private String imageUrl;
 
+    @Column(columnDefinition = "TEXT")
+    private String description;
+
+    // Indicateur nouveau véhicule
+    private boolean nouveau;
+
+    // Caractéristiques techniques
+    private String puissance;           // ex: "340 ch"
+    private String transmission;        // ex: "Automatique 8 vitesses"
+    private String carburant;           // ex: "Essence", "Électrique"
+    private String consommation;        // ex: "9.5 L/100km"
+    private String acceleration;        // ex: "5.5s (0-100 km/h)"
+    private String vitesseMax;          // ex: "243 km/h"
+
+    // Couleurs disponibles (stockées en JSON)
+    @ElementCollection
+    @CollectionTable(name = "vehicule_couleurs", joinColumns = @JoinColumn(name = "id_vehicule"))
+    @Column(name = "couleur")
+    private List<String> couleurs = new ArrayList<>();
+
+    @OneToMany(mappedBy = "vehicule", cascade = CascadeType.ALL, orphanRemoval = true)
+    @OrderBy("ordreAffichage ASC")
+    private List<ImageVehicule> images = new ArrayList<>();
+
     @Enumerated(EnumType.STRING)
     private TypeEngine engine;
 
@@ -45,6 +70,15 @@ public class Vehicule implements Sujet {
     @ManyToOne
     @JoinColumn(name = "id_stock")
     private Stock stock;
+
+    // Options disponibles pour ce véhicule
+    @ManyToMany
+    @JoinTable(
+        name = "vehicule_options",
+        joinColumns = @JoinColumn(name = "id_vehicule"),
+        inverseJoinColumns = @JoinColumn(name = "id_option")
+    )
+    private List<Option> options = new ArrayList<>();
 
 
     // ============================================
@@ -84,5 +118,56 @@ public class Vehicule implements Sujet {
                 o.update(this);
             }
         }
+    }
+
+    // ============================================
+    // Gestion des images multiples
+    // ============================================
+
+    /**
+     * Ajoute une image au véhicule
+     */
+    public void ajouterImage(ImageVehicule image) {
+        if (images == null) {
+            images = new ArrayList<>();
+        }
+        image.setVehicule(this);
+        image.setOrdreAffichage(images.size());
+        images.add(image);
+    }
+
+    /**
+     * Retire une image du véhicule
+     */
+    public void retirerImage(ImageVehicule image) {
+        if (images != null) {
+            images.remove(image);
+            image.setVehicule(null);
+        }
+    }
+
+    /**
+     * Retourne l'image principale (ou la première image)
+     */
+    public ImageVehicule getImagePrincipale() {
+        if (images == null || images.isEmpty()) {
+            return null;
+        }
+        return images.stream()
+                .filter(ImageVehicule::isEstPrincipale)
+                .findFirst()
+                .orElse(images.get(0));
+    }
+
+    /**
+     * Retourne toutes les URLs des images
+     */
+    public List<String> getImageUrls() {
+        if (images == null) {
+            return new ArrayList<>();
+        }
+        return images.stream()
+                .map(ImageVehicule::getUrl)
+                .collect(Collectors.toList());
     }
 }

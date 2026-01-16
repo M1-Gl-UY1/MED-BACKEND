@@ -21,10 +21,16 @@ public abstract class Commande {
     @Column(name = "id_commande")
     private Long idCommande;
 
+    @Column(unique = true)
+    private String reference;
+
     private double total;
 
     @Column(name = "type_paiement")
     private TypeMethodePaiement typePaiement;
+
+    @Column(name = "adresse_livraison")
+    private String adresseLivraison;
 
     @Enumerated(EnumType.STRING)
     private StatutPanier statut;

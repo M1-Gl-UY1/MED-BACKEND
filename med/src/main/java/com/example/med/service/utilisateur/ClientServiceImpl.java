@@ -22,4 +22,17 @@ public class ClientServiceImpl implements ClientService{
         Client client = trouverParMail(email);
         return BCrypt.checkpw(motDePasse, client.getMotDePasse());
     }
+
+    /**
+     * Authentifie un client et retourne ses informations
+     */
+    public Client authentifier(String email, String motDePasse) {
+        Client client = trouverParMail(email);
+        if (BCrypt.checkpw(motDePasse, client.getMotDePasse())) {
+            // Ne pas exposer le mot de passe dans la réponse
+            client.setMotDePasse(null);
+            return client;
+        }
+        throw new RuntimeException("Mot de passe incorrect");
+    }
 }

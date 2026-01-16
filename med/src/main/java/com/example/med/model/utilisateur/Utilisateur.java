@@ -21,4 +21,10 @@ public abstract class Utilisateur {
     @JsonProperty(access = JsonProperty.Access.WRITE_ONLY)
     @Column(name = "mot_dePasse")
     private String motDePasse;
+
+    // Coordonnées
+    private String telephone;
+    private String adresse;
+    private String ville;
+    private String pays;
 }
