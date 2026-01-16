@@ -13,10 +13,12 @@ pour une application de vente en ligne de vehicules.
 1. STRUCTURE DU BACKEND
 2. PREREQUIS
 3. CONFIGURATION
-4. LANCEMENT
-5. DESIGN PATTERNS IMPLEMENTES
-6. ARCHITECTURE DES PATTERNS
-7. EXEMPLES D'UTILISATION
+4. DEPENDANCES PRINCIPALES
+5. LANCEMENT
+6. SECURITE JWT
+7. DESIGN PATTERNS IMPLEMENTES
+8. ARCHITECTURE DES PATTERNS
+9. EXEMPLES D'UTILISATION
 
 ================================================================================
                         1. STRUCTURE DU BACKEND
@@ -55,36 +57,84 @@ med/
                              2. PREREQUIS
 ================================================================================
 
-- Java JDK 17 ou superieur
+- Java JDK 21 (LTS)
 - Maven 3.8+
-- MySQL 8.0+ (ou PostgreSQL)
+- PostgreSQL 16+
 
 ================================================================================
                            3. CONFIGURATION
 ================================================================================
 
-Modifier le fichier src/main/resources/application.properties :
+Modifier le fichier src/main/resources/application.yml :
 
-    spring.datasource.url=jdbc:mysql://localhost:3306/med_motors
-    spring.datasource.username=votre_username
-    spring.datasource.password=votre_password
-    spring.jpa.hibernate.ddl-auto=update
+    server:
+      port: 8085
+
+    spring:
+      datasource:
+        url: jdbc:postgresql://localhost:5432/med_db
+        username: postgres
+        password: votre_password
+
+      jpa:
+        hibernate:
+          ddl-auto: update
+
+    jwt:
+      secret: "votre-secret-jwt-256-bits-minimum"
+      expiration: 86400000      # 24h pour clients/societes
+      admin-expiration: 28800000 # 8h pour admin
 
 ================================================================================
-                            4. LANCEMENT
+                         4. DEPENDANCES PRINCIPALES
+================================================================================
+
+- Spring Boot 4.0.1
+- Spring Data JPA
+- Spring Data REST
+- Spring Security
+- PostgreSQL Driver
+- Lombok
+- JWT (jjwt-api, jjwt-impl, jjwt-jackson) v0.12.5
+- iText 7 (generation PDF)
+
+================================================================================
+                            5. LANCEMENT
 ================================================================================
 
 Option 1 - Maven:
-    mvn spring-boot:run 
+    mvn spring-boot:run
 
 Option 2 - JAR:
     mvn clean package
     java -jar target/med-0.0.1-SNAPSHOT.jar
 
-Le serveur demarre sur: http://localhost:8080
+Le serveur demarre sur: http://localhost:8085
 
 ================================================================================
-                    5. DESIGN PATTERNS IMPLEMENTES
+                           6. SECURITE JWT
+================================================================================
+
+L'application utilise Spring Security avec authentification JWT :
+
+Endpoints publics :
+- POST /api/auth/login         - Connexion (client/societe)
+- POST /api/clients            - Inscription client
+- POST /api/societes           - Inscription societe
+- GET  /api/vehicules/**       - Catalogue (lecture)
+- GET  /vehicules/**           - Catalogue custom (lecture)
+
+Endpoints admin uniquement :
+- /api/stats/**                - Statistiques
+- /api/admin/**                - Administration
+- POST/PUT/DELETE /vehicules   - CRUD vehicules
+
+Endpoints authentifies :
+- /api/commandes/**            - Gestion commandes
+- /api/documents/**            - Documents
+
+================================================================================
+                    7. DESIGN PATTERNS IMPLEMENTES
 ================================================================================
 
 +----+---------------------+----------------------------------+------------------------+
@@ -105,7 +155,7 @@ Le serveur demarre sur: http://localhost:8080
 +----+---------------------+----------------------------------+------------------------+
 
 ================================================================================
-                      6. ARCHITECTURE DES PATTERNS
+                      8. ARCHITECTURE DES PATTERNS
 ================================================================================
 
 ABSTRACT FACTORY
@@ -183,7 +233,7 @@ GestionnairesCommandes (invoker) --> CommandeAction (interface)
                                          |-- CommandeSoldeVehicule
 
 ================================================================================
-                       7. EXEMPLES D'UTILISATION
+                       9. EXEMPLES D'UTILISATION
 ================================================================================
 
 // ABSTRACT FACTORY
