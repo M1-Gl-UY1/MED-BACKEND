@@ -11,6 +11,32 @@ services:
       - "5431:5432"
     volumes:
       - pgdata:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U med_user -d med_db"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+
+  app:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    container_name: med_backend
+    restart: always
+    ports:
+      - "8085:8085"
+    environment:
+      SPRING_PROFILES_ACTIVE: prod
+      DATABASE_URL: jdbc:postgresql://postgres:5432/med_db
+      DATABASE_USERNAME: med_user
+      DATABASE_PASSWORD: med_password
+      JWT_SECRET: dev-secret-key-change-in-production-must-be-256-bits
+    depends_on:
+      postgres:
+        condition: service_healthy
+    volumes:
+      - uploads:/app/uploads
 
 volumes:
   pgdata:
+  uploads:
