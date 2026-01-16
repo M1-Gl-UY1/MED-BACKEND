@@ -3,6 +3,7 @@ package com.example.med.controller.utilisateur;
 import com.example.med.dto.Auth;
 import com.example.med.model.utilisateur.Societe;
 import com.example.med.repository.SocieteRepository;
+import com.example.med.security.JwtUtil;
 import lombok.RequiredArgsConstructor;
 import org.mindrot.jbcrypt.BCrypt;
 import org.springframework.http.HttpStatus;
@@ -19,6 +20,7 @@ import java.util.Optional;
 public class SocieteController {
 
     private final SocieteRepository repository;
+    private final JwtUtil jwtUtil;
 
     /**
      * Liste toutes les sociétés
@@ -45,7 +47,7 @@ public class SocieteController {
     }
 
     /**
-     * Authentification d'une société
+     * Authentification d'une societe (retourne le token JWT)
      */
     @PostMapping("/auth")
     public ResponseEntity<?> authentification(@RequestBody Auth auth) {
@@ -54,18 +56,19 @@ public class SocieteController {
 
             if (societeOpt.isEmpty()) {
                 return ResponseEntity.status(HttpStatus.UNAUTHORIZED)
-                    .body(Map.of("message", "Email non trouvé"));
+                    .body(Map.of("message", "Email non trouve"));
             }
 
             Societe societe = societeOpt.get();
 
             if (BCrypt.checkpw(auth.getMotDePasse(), societe.getMotDePasse())) {
-                // Ne pas exposer le mot de passe
+                String token = jwtUtil.generateToken(societe.getIdUtilisateur(), societe.getEmail(), "SOCIETE");
                 societe.setMotDePasse(null);
                 return ResponseEntity.ok(Map.of(
+                    "token", token,
                     "user", societe,
                     "type", "SOCIETE",
-                    "message", "Connexion réussie"
+                    "message", "Connexion reussie"
                 ));
             }
 

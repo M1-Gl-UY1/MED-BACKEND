@@ -5,18 +5,18 @@ import com.example.med.model.commande_et_document.Commande;
 /**
  * PATTERN ADAPTER - Adapter (Adaptateur)
  *
- * Adapte le composant technique ComposantHtml à l'interface DocumentInterface.
- * Permet d'utiliser la génération HTML de manière uniforme.
+ * Adapte le composant technique HtmlGenerator a l'interface DocumentInterface.
+ * Permet d'utiliser la generation HTML de maniere uniforme.
  *
  * Structure:
- * - Implémente Target (DocumentInterface)
- * - Compose Adaptee (ComposantHtml)
- * - Traduit les appels de l'interface vers le composant adapté
+ * - Target: DocumentInterface (cette interface)
+ * - Adapter: DocumentHtml (cette classe)
+ * - Adaptee: HtmlGenerator (composant technique)
  */
 public class DocumentHtml implements DocumentInterface {
 
-    // Composant technique adapté (Adaptee)
-    private ComposantHtml outilHtml = new ComposantHtml();
+    // Composant technique adapte (Adaptee)
+    private HtmlGenerator htmlGenerator = new HtmlGenerator();
     private String titre;
     private Commande commande;
 
@@ -30,10 +30,10 @@ public class DocumentHtml implements DocumentInterface {
     }
 
     /**
-     * Délègue la génération au composant HTML adapté
+     * Delegue la generation au composant HTML adapte
      */
     @Override
     public String imprimer() {
-        return outilHtml.htmlPrepareAffichage(this.titre, this.commande);
+        return htmlGenerator.genererHtmlCommande(this.titre, this.commande);
     }
 }

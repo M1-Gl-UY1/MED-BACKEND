@@ -10,7 +10,7 @@ spring:
   jpa:
     database-platform: org.hibernate.dialect.PostgreSQLDialect
     hibernate:
-      ddl-auto: update
+      ddl-auto: create
     show-sql: true
 
   # Configuration upload de fichiers
@@ -29,4 +29,10 @@ spring:
 app:
   upload:
     dir: uploads/images
+
+# Configuration JWT
+jwt:
+  secret: "MED-Application-Secret-Key-For-JWT-Token-Generation-2024-Must-Be-At-Least-256-Bits-Long"
+  expiration: 86400000      # 24h pour clients/societes
+  admin-expiration: 28800000 # 8h pour admin
 

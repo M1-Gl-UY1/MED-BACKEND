@@ -3,8 +3,10 @@ package com.example.med.controller.utilisateur;
 import com.example.med.dto.Auth;
 import com.example.med.model.utilisateur.Client;
 import com.example.med.repository.ClientRepository;
+import com.example.med.security.JwtUtil;
 import com.example.med.service.utilisateur.ClientServiceImpl;
 import lombok.RequiredArgsConstructor;
+import org.mindrot.jbcrypt.BCrypt;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
@@ -18,6 +20,7 @@ import java.util.Map;
 public class ClientController {
     private final ClientServiceImpl service;
     private final ClientRepository repository;
+    private final JwtUtil jwtUtil;
 
     /**
      * Liste tous les clients
@@ -52,16 +55,18 @@ public class ClientController {
     }
 
     /**
-     * Authentification complète (retourne l'utilisateur)
+     * Authentification complete (retourne l'utilisateur et le token JWT)
      */
     @PostMapping("/auth")
     public ResponseEntity<?> authentification(@RequestBody Auth auth){
         try {
             Client client = service.authentifier(auth.getEmail(), auth.getMotDePasse());
+            String token = jwtUtil.generateToken(client.getIdUtilisateur(), client.getEmail(), "CLIENT");
             return ResponseEntity.ok(Map.of(
+                "token", token,
                 "user", client,
                 "type", "CLIENT",
-                "message", "Connexion réussie"
+                "message", "Connexion reussie"
             ));
         } catch (RuntimeException e) {
             return ResponseEntity.status(HttpStatus.UNAUTHORIZED)
@@ -70,14 +75,13 @@ public class ClientController {
     }
 
     /**
-     * Crée un nouveau client
+     * Cree un nouveau client
      */
     @PostMapping
     public ResponseEntity<Client> createClient(@RequestBody Client client) {
-        // Encoder le mot de passe si présent
+        // Encoder le mot de passe avec BCrypt
         if (client.getMotDePasse() != null && !client.getMotDePasse().isEmpty()) {
-            // En production, utiliser BCrypt ou autre encodeur
-            client.setMotDePasse(client.getMotDePasse());
+            client.setMotDePasse(BCrypt.hashpw(client.getMotDePasse(), BCrypt.gensalt()));
         }
         Client saved = repository.save(client);
         saved.setMotDePasse(null);
@@ -103,9 +107,9 @@ public class ClientController {
                 if (details.getVille() != null) existing.setVille(details.getVille());
                 if (details.getPays() != null) existing.setPays(details.getPays());
 
-                // Ne pas modifier le mot de passe ici sauf si explicitement fourni
+                // Hasher le mot de passe si explicitement fourni
                 if (details.getMotDePasse() != null && !details.getMotDePasse().isEmpty()) {
-                    existing.setMotDePasse(details.getMotDePasse());
+                    existing.setMotDePasse(BCrypt.hashpw(details.getMotDePasse(), BCrypt.gensalt()));
                 }
 
                 Client saved = repository.save(existing);
