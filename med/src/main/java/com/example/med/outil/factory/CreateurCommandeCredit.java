@@ -1,6 +1,7 @@
 package com.example.med.outil.factory;
 
 import com.example.med.model.commande_et_document.Commande;
+import org.springframework.stereotype.Component;
 
 /**
  * PATTERN FACTORY METHOD - ConcreteCreator
@@ -8,6 +9,7 @@ import com.example.med.model.commande_et_document.Commande;
  * Créateur concret pour les commandes avec demande de crédit.
  * Implémente la factory method pour créer des CommandeCredit.
  */
+@Component("credit")
 public class CreateurCommandeCredit extends CreateurCommande {
 
     /**

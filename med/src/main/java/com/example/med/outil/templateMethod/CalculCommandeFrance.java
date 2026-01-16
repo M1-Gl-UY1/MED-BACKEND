@@ -1,11 +1,14 @@
 package com.example.med.outil.templateMethod;
 
+import org.springframework.stereotype.Component;
+
 /**
  * PATTERN TEMPLATE METHOD - ConcreteClass
  *
  * Implémentation du calcul pour les livraisons en France.
  * Applique la TVA française (20%).
  */
+@Component("FR")
 public class CalculCommandeFrance extends CalculCommande {
 
     private static final double TAUX_TVA_FRANCE = 0.20; // 20%

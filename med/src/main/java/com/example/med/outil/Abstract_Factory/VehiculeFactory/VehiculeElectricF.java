@@ -4,6 +4,7 @@ import com.example.med.outil.Abstract_Factory.Automobile.Automobile;
 import com.example.med.outil.Abstract_Factory.Automobile.AutomobileElectric;
 import com.example.med.outil.Abstract_Factory.Scooter.Scooter;
 import com.example.med.outil.Abstract_Factory.Scooter.ScooterElectric;
+import org.springframework.stereotype.Component;
 
 /**
  * PATTERN ABSTRACT FACTORY - ConcreteFactory
@@ -14,6 +15,7 @@ import com.example.med.outil.Abstract_Factory.Scooter.ScooterElectric;
  * Garantit la cohérence: une AutomobileElectric et un ScooterElectric
  * sont toujours créés ensemble.
  */
+@Component
 public class VehiculeElectricF implements VehiculeFactory {
 
     @Override
