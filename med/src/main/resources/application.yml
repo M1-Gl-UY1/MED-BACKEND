@@ -1,8 +1,11 @@
+server:
+  port: 8081
+
 spring:
   datasource:
-    url: jdbc:postgresql://localhost:5431/med_db
-    username: med_user
-    password: med_password
+    url: jdbc:postgresql://localhost:5432/med_db
+    username: postgres
+    password: 12345678
 
   jpa:
     database-platform: org.hibernate.dialect.PostgreSQLDialect
