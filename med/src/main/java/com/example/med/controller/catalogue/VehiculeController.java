@@ -45,8 +45,9 @@ public class VehiculeController {
     @Autowired
     private VehiculeService vehiculeService;
 
-    @PostMapping("/vehicules/")
+    @PostMapping("/vehicules")
     public ResponseEntity<Vehicule> createVehicule(@RequestBody VehiculeCreationDTO dto) {
+        System.out.println("hey !");
         // Créer le véhicule avec les données du DTO
         Vehicule vehicule = new Vehicule();
 
@@ -136,27 +137,25 @@ public class VehiculeController {
     }
 
     // Cette méthode va INTERCEPTER le GET /api/vehicules par défaut
-    @GetMapping(path = "/vehicules")
-    public @ResponseBody ResponseEntity<?> findAllCustom() {
+    @Transactional(readOnly = true)
+    @GetMapping("/vehicules")
+    public ResponseEntity<List<Vehicule>> findAllCustom() {
 
-        //Récupérer les données de la base
         List<Vehicule> vehicules = repository.findAll();
 
-        //Parcourir la liste pour "Décorer" à la volée
         for (Vehicule v : vehicules) {
-
-            // Si le véhicule est en solde, on active le Pattern Decorator
             if (v.isSolde()) {
+                VehiculeComposant vehiculeDecore =
+                        new DecorateurPromo(new VehiculeDeBase(v));
 
-                // A. On instancie le décorateur autour du véhicule (via VehiculeDeBase)
-                VehiculeComposant vehiculeDecore = new DecorateurPromo(new VehiculeDeBase(v));
-
-                v.setPrixBase(vehiculeDecore.getPrix()); // Remplace le prix par le prix réduit
-                v.setNom(vehiculeDecore.getNom());      // Remplace le nom par "Nom [PROMO...]"
+                v.setPrixBase(vehiculeDecore.getPrix());
+                v.setNom(vehiculeDecore.getNom());
             }
         }
+
         return ResponseEntity.ok(vehicules);
     }
+
 
 //    @PostMapping(path = "/vehicules")
 //    public @ResponseBody ResponseEntity<?> createVehicule(@RequestBody Vehicule vehicule) {
@@ -167,13 +166,22 @@ public class VehiculeController {
 //                .body(saved);
 //    }
 
-    @GetMapping(path = "/vehicules/{id}")
-    public @ResponseBody ResponseEntity<?> getVehiculeById(@PathVariable Long id) {
-        Optional<Vehicule> vehicule = repository.findById(id);
+    @Transactional(readOnly = true)
+    @GetMapping("/vehicules/{id}")
+    public ResponseEntity<?> getVehiculeById(@PathVariable Long id) {
 
-        // Si trouvé, on renvoie 200 OK, sinon 404 Not Found
-        return vehicule.map(ResponseEntity::ok)
-                .orElse(ResponseEntity.notFound().build());
+        return repository.findById(id).map(v -> {
+
+            if (v.isSolde()) {
+                VehiculeComposant decore =
+                        new DecorateurPromo(new VehiculeDeBase(v));
+
+                v.setNom(decore.getNom());
+                v.setPrixBase(decore.getPrix());
+            }
+
+            return ResponseEntity.ok(v);
+        }).orElse(ResponseEntity.notFound().build());
     }
 
     @PutMapping(path = "/vehicules/{id}")
