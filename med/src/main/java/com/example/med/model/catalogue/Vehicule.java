@@ -7,6 +7,7 @@ import lombok.Data;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.stream.Collectors;
 
 /**
  * Entité Véhicule - Représente un véhicule dans le catalogue
@@ -32,6 +33,10 @@ public class Vehicule implements Sujet {
     private double facteurReduction;
     private int annee;
     private String imageUrl;
+
+    @OneToMany(mappedBy = "vehicule", cascade = CascadeType.ALL, orphanRemoval = true)
+    @OrderBy("ordreAffichage ASC")
+    private List<ImageVehicule> images = new ArrayList<>();
 
     @Enumerated(EnumType.STRING)
     private TypeEngine engine;
@@ -84,5 +89,56 @@ public class Vehicule implements Sujet {
                 o.update(this);
             }
         }
+    }
+
+    // ============================================
+    // Gestion des images multiples
+    // ============================================
+
+    /**
+     * Ajoute une image au véhicule
+     */
+    public void ajouterImage(ImageVehicule image) {
+        if (images == null) {
+            images = new ArrayList<>();
+        }
+        image.setVehicule(this);
+        image.setOrdreAffichage(images.size());
+        images.add(image);
+    }
+
+    /**
+     * Retire une image du véhicule
+     */
+    public void retirerImage(ImageVehicule image) {
+        if (images != null) {
+            images.remove(image);
+            image.setVehicule(null);
+        }
+    }
+
+    /**
+     * Retourne l'image principale (ou la première image)
+     */
+    public ImageVehicule getImagePrincipale() {
+        if (images == null || images.isEmpty()) {
+            return null;
+        }
+        return images.stream()
+                .filter(ImageVehicule::isEstPrincipale)
+                .findFirst()
+                .orElse(images.get(0));
+    }
+
+    /**
+     * Retourne toutes les URLs des images
+     */
+    public List<String> getImageUrls() {
+        if (images == null) {
+            return new ArrayList<>();
+        }
+        return images.stream()
+                .map(ImageVehicule::getUrl)
+                .collect(Collectors.toList());
     }
 }
