@@ -3,47 +3,48 @@ package com.example.med.outil.Builder;
 import com.example.med.model.commande_et_document.Document;
 import com.example.med.model.commande_et_document.TypeDocument;
 import com.example.med.model.commande_et_document.TypeFormat;
-import com.example.med.outil.adapter.DocumentHtml;
+import com.example.med.outil.adapter.DocumentExport;
+import com.example.med.outil.adapter.HTMLExporter;
 
+/**
+ * PATTERN BUILDER - ConcreteBuilder
+ *
+ * Builder concret pour créer une liasse de documents au format HTML.
+ * Utilise l'Adapter HTMLExporter (conforme au schéma UML).
+ */
 public class LiasseBuilderHTML extends LiasseBuilder {
+
+    // Utilisation de l'interface Target du pattern Adapter (conforme au schéma)
+    private DocumentExport exporter = new HTMLExporter();
 
     @Override
     public void construireBonCommande(String titre) {
-        DocumentHtml adapter = new DocumentHtml(titre);
-        adapter.preparerDonnees(this.commandeRef); // Utilise la commande stockée dans le parent
-        
-        String url = adapter.imprimer(); 
-
-        Document doc = new Document();
+        Document doc = creerDocument();
         doc.setType(TypeDocument.BON_COMMANDE);
-        doc.setFormat(TypeFormat.HTML);
-        doc.setUrl(url);
+        exporter.exporter(doc);
         this.liasse.ajouterDocument(doc);
     }
 
     @Override
     public void construireCertificatCession(String titre) {
-        DocumentHtml adapter = new DocumentHtml(titre);
-        adapter.preparerDonnees(this.commandeRef);
-        String url = adapter.imprimer();
-
-        Document doc = new Document();
+        Document doc = creerDocument();
         doc.setType(TypeDocument.CERTIFICAT_CESSION);
-        doc.setFormat(TypeFormat.HTML);
-        doc.setUrl(url);
+        exporter.exporter(doc);
         this.liasse.ajouterDocument(doc);
     }
 
     @Override
     public void construireDemandeImmatriculation(String titre) {
-        DocumentHtml adapter = new DocumentHtml(titre);
-        adapter.preparerDonnees(this.commandeRef);
-        String url = adapter.imprimer();
-
-        Document doc = new Document();
+        Document doc = creerDocument();
         doc.setType(TypeDocument.DEMANDE_IMMATRICULATION);
-        doc.setFormat(TypeFormat.HTML);
-        doc.setUrl(url);
+        exporter.exporter(doc);
         this.liasse.ajouterDocument(doc);
+    }
+
+    @Override
+    public Document creerDocument() {
+        Document doc = new Document();
+        doc.setFormat(TypeFormat.HTML);
+        return doc;
     }
 }

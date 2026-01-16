@@ -1,10 +1,22 @@
 package com.example.med.outil.templateMethod;
 
-public class CalculCommandeCameroun extends CalculCommande{
+/**
+ * PATTERN TEMPLATE METHOD - ConcreteClass
+ *
+ * Implémentation du calcul pour les livraisons au Cameroun.
+ * Applique la TVA camerounaise (19.25%).
+ */
+public class CalculCommandeCameroun extends CalculCommande {
 
+    private static final double TAUX_TVA_CAMEROUN = 0.1925; // 19.25%
+
+    /**
+     * Calcule les taxes camerounaises (TVA 19.25%)
+     * @param montant Le montant HT
+     * @return Le montant des taxes
+     */
     @Override
     protected double calculerTaxes(double montant) {
-        return montant * 0.19;
+        return montant * TAUX_TVA_CAMEROUN;
     }
-
 }

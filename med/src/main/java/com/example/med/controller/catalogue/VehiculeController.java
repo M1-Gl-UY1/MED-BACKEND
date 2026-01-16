@@ -4,6 +4,7 @@ import com.example.med.dto.VehiculeCreationDTO;
 import com.example.med.model.catalogue.Vehicule;
 import com.example.med.outil.decorator.DecorateurPromo;
 import com.example.med.outil.decorator.VehiculeComposant;
+import com.example.med.outil.decorator.VehiculeDeBase;
 import com.example.med.repository.VehiculeRepository;
 import com.example.med.service.vehicule.VehiculeService;
 import lombok.RequiredArgsConstructor;
@@ -47,8 +48,8 @@ public class VehiculeController {
             // Si le véhicule est en solde, on active le Pattern Decorator
             if (v.isSolde()) {
 
-                // A. On instancie le décorateur autour du véhicule
-                VehiculeComposant vehiculeDecore = new DecorateurPromo(v);
+                // A. On instancie le décorateur autour du véhicule (via VehiculeDeBase)
+                VehiculeComposant vehiculeDecore = new DecorateurPromo(new VehiculeDeBase(v));
 
                 v.setPrixBase(vehiculeDecore.getPrix()); // Remplace le prix par le prix réduit
                 v.setNom(vehiculeDecore.getNom());      // Remplace le nom par "Nom [PROMO...]"

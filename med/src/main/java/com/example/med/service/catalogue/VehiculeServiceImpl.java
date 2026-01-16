@@ -2,8 +2,8 @@ package com.example.med.service.catalogue;
 
 import com.example.med.model.catalogue.Vehicule;
 import com.example.med.outil.decorator.DecorateurPromo;
-import com.example.med.outil.decorator.DecorateurVehicule;
 import com.example.med.outil.decorator.VehiculeComposant;
+import com.example.med.outil.decorator.VehiculeDeBase;
 import com.example.med.repository.VehiculeRepository;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
@@ -23,9 +23,9 @@ public class VehiculeServiceImpl implements VehiculeService{
 
         for (Vehicule v : vehicules) {
             if (v.isSolde()) {
-                result.add(new DecorateurPromo(v));
+                result.add(new DecorateurPromo(new VehiculeDeBase(v)));
             } else {
-                result.add(v);
+                result.add(new VehiculeDeBase(v));
             }
         }
 

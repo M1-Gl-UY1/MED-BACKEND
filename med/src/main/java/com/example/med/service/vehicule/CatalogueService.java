@@ -32,7 +32,7 @@ public class CatalogueService {
     while (iterator.hasNext()) {
         Vehicule v = (Vehicule) iterator.next();
         // Transformation en DTO pour l'envoi au client
-        listeAEnvoyer.add(new VehiculeIteratorDTO(v.getNom(), v.getPrix()) );
+        listeAEnvoyer.add(new VehiculeIteratorDTO(v.getNom(), v.getPrixBase()) );
     }
     return listeAEnvoyer;
     }

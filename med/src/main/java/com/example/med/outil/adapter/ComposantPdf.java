@@ -1,12 +1,7 @@
 package com.example.med.outil.adapter;
 
-<<<<<<< HEAD
-import java.io.File;
-
-=======
 import com.example.med.model.commande_et_document.Commande;
 import com.example.med.model.commande_et_document.LigneCommande;
->>>>>>> routes
 import com.itextpdf.kernel.pdf.PdfDocument;
 import com.itextpdf.kernel.pdf.PdfWriter;
 import com.itextpdf.layout.element.Paragraph;
@@ -15,8 +10,24 @@ import com.itextpdf.layout.element.Cell;
 import com.itextpdf.layout.properties.UnitValue;
 import java.io.File;
 
+/**
+ * PATTERN ADAPTER - Adaptee (Composant adapté)
+ *
+ * Classe technique spécialisée dans la génération de documents PDF.
+ * Cette classe utilise la bibliothèque iTextPDF pour créer des fichiers PDF.
+ *
+ * Elle est utilisée par DocumentPdf (Adapter) pour convertir les données
+ * de commande en format PDF.
+ */
 public class ComposantPdf {
 
+    /**
+     * Génère un document PDF à partir des données de commande
+     *
+     * @param titreDoc Le titre du document
+     * @param commande Les données de la commande
+     * @return L'URL relative du fichier PDF généré
+     */
     public String pdfPrepareAffichage(String titreDoc, Commande commande) {
         try {
             // 1. Gestion du dossier local
@@ -46,7 +57,6 @@ public class ComposantPdf {
             layoutDoc.add(new Paragraph("\nDÉTAILS DU VÉHICULE / COMMANDE").setBold());
 
             // 4. Tableau des produits (Véhicules et Options)
-            // Colonnes : Description, Quantité, Prix Unit HT, Total HT
             float[] columnWidths = {4, 1, 2, 2};
             Table table = new Table(UnitValue.createPointArray(columnWidths));
             table.setWidth(UnitValue.createPercentValue(100));
@@ -63,8 +73,6 @@ public class ComposantPdf {
                 table.addCell(new Cell().add(new Paragraph(String.valueOf(ligne.getQuantite()))));
                 table.addCell(new Cell().add(new Paragraph(ligne.getPrixUnitaireHT() + " €")));
                 table.addCell(new Cell().add(new Paragraph((ligne.getPrixUnitaireHT() * ligne.getQuantite()) + " €")));
-
-                
             }
             layoutDoc.add(table);
 
