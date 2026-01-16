@@ -29,7 +29,10 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
 
         final String authHeader = request.getHeader("Authorization");
 
+        System.out.println("[JWT Filter] Request: " + request.getMethod() + " " + request.getRequestURI());
+
         if (authHeader == null || !authHeader.startsWith("Bearer ")) {
+            System.out.println("[JWT Filter] No Bearer token found");
             filterChain.doFilter(request, response);
             return;
         }
@@ -41,8 +44,12 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
             Long userId = jwtUtil.extractUserId(token);
             String userType = jwtUtil.extractUserType(token);
 
+            System.out.println("[JWT Filter] Token valid - User: " + email + ", Type: " + userType);
+
             if (email != null && SecurityContextHolder.getContext().getAuthentication() == null) {
                 UserPrincipal userPrincipal = new UserPrincipal(userId, email, userType);
+
+                System.out.println("[JWT Filter] Authorities: " + userPrincipal.getAuthorities());
 
                 UsernamePasswordAuthenticationToken authToken = new UsernamePasswordAuthenticationToken(
                         userPrincipal,
@@ -53,6 +60,8 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
                 authToken.setDetails(new WebAuthenticationDetailsSource().buildDetails(request));
                 SecurityContextHolder.getContext().setAuthentication(authToken);
             }
+        } else {
+            System.out.println("[JWT Filter] Token INVALID");
         }
 
         filterChain.doFilter(request, response);

@@ -7,6 +7,9 @@ import com.example.med.model.catalogue.Stock;
 import com.example.med.model.catalogue.TypeEngine;
 import com.example.med.model.catalogue.TypeVehicule;
 import com.example.med.model.catalogue.Vehicule;
+import com.example.med.outil.Iterator.Catalogue;
+import com.example.med.outil.Iterator.CatalogueVehicule;
+import com.example.med.outil.Iterator.VehiculeIterator;
 import com.example.med.outil.decorator.DecorateurPromo;
 import com.example.med.outil.decorator.VehiculeComposant;
 import com.example.med.outil.decorator.VehiculeDeBase;
@@ -27,7 +30,9 @@ import org.springframework.web.multipart.MultipartFile;
 
 import java.net.URI;
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 import java.util.Optional;
 
 @RestController
@@ -45,34 +50,32 @@ public class VehiculeController {
     @Autowired
     private VehiculeService vehiculeService;
 
+    /**
+     * Créer un véhicule
+     *
+     * NOTE: Le pattern Abstract Factory est démontré dans l'endpoint /vehicules/catalogue/iterate
+     * Pour la persistence en base de données, on crée directement des entités Vehicule
+     * car les classes produits de l'Abstract Factory (AutomobileElectric, etc.) ne sont
+     * pas des entités JPA et ne peuvent pas être persistées directement.
+     */
     @PostMapping("/vehicules/")
     public ResponseEntity<Vehicule> createVehicule(@RequestBody VehiculeCreationDTO dto) {
-        // Créer le véhicule avec les données du DTO
+
+        // Créer une nouvelle entité Vehicule (JPA entity)
         Vehicule vehicule = new Vehicule();
 
-        // Définir l'énergie (engine)
-        if (dto.getEnergie() != null) {
-            try {
-                vehicule.setEngine(TypeEngine.valueOf(dto.getEnergie().toUpperCase()));
-            } catch (IllegalArgumentException e) {
-                vehicule.setEngine(TypeEngine.ESSENCE);
-            }
-        } else {
-            vehicule.setEngine(TypeEngine.ESSENCE);
-        }
+        // Définir le type (AUTOMOBILE ou SCOOTER)
+        String type = dto.getType() != null ? dto.getType().toUpperCase() : "AUTOMOBILE";
+        if (type.equals("AUTO")) type = "AUTOMOBILE";
+        vehicule.setType(type.equals("SCOOTER") ? TypeVehicule.SCOOTER : TypeVehicule.AUTOMOBILE);
 
-        // Définir le type de véhicule
-        if (dto.getType() != null) {
-            try {
-                String typeStr = dto.getType().toUpperCase();
-                if (typeStr.equals("AUTO")) typeStr = "AUTOMOBILE";
-                vehicule.setType(TypeVehicule.valueOf(typeStr));
-            } catch (IllegalArgumentException e) {
-                vehicule.setType(TypeVehicule.AUTOMOBILE);
-            }
-        } else {
-            vehicule.setType(TypeVehicule.AUTOMOBILE);
-        }
+        // Définir l'énergie
+        String energie = dto.getEnergie() != null ? dto.getEnergie().toUpperCase() : "ESSENCE";
+        vehicule.setEngine(energie.equals("ELECTRIQUE") ? TypeEngine.ELECTRIQUE : TypeEngine.ESSENCE);
+
+        // ============================================
+        // Configuration des propriétés du véhicule
+        // ============================================
 
         // Informations de base
         vehicule.setNom(dto.getNom() != null ? dto.getNom() : "Nouveau véhicule");
@@ -135,27 +138,157 @@ public class VehiculeController {
         return ResponseEntity.created(URI.create("/vehicules/" + saved.getIdVehicule())).body(saved);
     }
 
-    // Cette méthode va INTERCEPTER le GET /api/vehicules par défaut
+    /**
+     * Récupère tous les véhicules avec décoration (Pattern Decorator)
+     *
+     * IMPORTANT: On ne modifie PAS l'entité directement pour éviter de persister
+     * les changements en base de données. On retourne une Map avec les valeurs décorées.
+     */
     @GetMapping(path = "/vehicules")
     public @ResponseBody ResponseEntity<?> findAllCustom() {
 
-        //Récupérer les données de la base
+        // Récupérer les données de la base
         List<Vehicule> vehicules = repository.findAll();
 
-        //Parcourir la liste pour "Décorer" à la volée
+        // Créer une liste de réponses avec les valeurs décorées
+        List<Map<String, Object>> response = new ArrayList<>();
+
         for (Vehicule v : vehicules) {
+            Map<String, Object> vehiculeData = new HashMap<>();
 
-            // Si le véhicule est en solde, on active le Pattern Decorator
+            // Copier les données de base
+            vehiculeData.put("idVehicule", v.getIdVehicule());
+            vehiculeData.put("marque", v.getMarque());
+            vehiculeData.put("model", v.getModel());
+            vehiculeData.put("annee", v.getAnnee());
+            vehiculeData.put("type", v.getType());
+            vehiculeData.put("engine", v.getEngine());
+            vehiculeData.put("description", v.getDescription());
+            vehiculeData.put("puissance", v.getPuissance());
+            vehiculeData.put("transmission", v.getTransmission());
+            vehiculeData.put("carburant", v.getCarburant());
+            vehiculeData.put("consommation", v.getConsommation());
+            vehiculeData.put("acceleration", v.getAcceleration());
+            vehiculeData.put("vitesseMax", v.getVitesseMax());
+            vehiculeData.put("couleurs", v.getCouleurs());
+            vehiculeData.put("images", v.getImages());
+            vehiculeData.put("options", v.getOptions());
+            vehiculeData.put("stock", v.getStock());
+            vehiculeData.put("nouveau", v.isNouveau());
+            vehiculeData.put("solde", v.isSolde());
+            vehiculeData.put("facteurReduction", v.getFacteurReduction());
+
+            // Prix et nom originaux (stockés en BD)
+            vehiculeData.put("prixOriginal", v.getPrixBase());
+            vehiculeData.put("nomOriginal", v.getNom());
+
+            // Si le véhicule est en solde, appliquer le Pattern Decorator
             if (v.isSolde()) {
-
-                // A. On instancie le décorateur autour du véhicule (via VehiculeDeBase)
                 VehiculeComposant vehiculeDecore = new DecorateurPromo(new VehiculeDeBase(v));
 
-                v.setPrixBase(vehiculeDecore.getPrix()); // Remplace le prix par le prix réduit
-                v.setNom(vehiculeDecore.getNom());      // Remplace le nom par "Nom [PROMO...]"
+                // Valeurs décorées (pour l'affichage uniquement, PAS en BD)
+                vehiculeData.put("prixBase", vehiculeDecore.getPrix());
+                vehiculeData.put("nom", vehiculeDecore.getNom());
+                vehiculeData.put("decorated", true);
+            } else {
+                vehiculeData.put("prixBase", v.getPrixBase());
+                vehiculeData.put("nom", v.getNom());
+                vehiculeData.put("decorated", false);
+            }
+
+            response.add(vehiculeData);
+        }
+
+        return ResponseEntity.ok(response);
+    }
+
+    /**
+     * PATTERN ITERATOR - Parcours du catalogue avec itérateur personnalisé
+     *
+     * Cet endpoint démontre l'utilisation du pattern Iterator pour parcourir
+     * le catalogue de véhicules sans exposer la structure de données sous-jacente.
+     *
+     * Structure Iterator utilisée:
+     * - Aggregate: Catalogue (interface)
+     * - ConcreteAggregate: CatalogueVehicule
+     * - Iterator: VehiculeIterator (interface)
+     * - ConcreteIterator: CatalogueIterator
+     *
+     * @param type Filtrer par type (AUTOMOBILE, SCOOTER) - optionnel
+     * @param energie Filtrer par énergie (ESSENCE, ELECTRIQUE) - optionnel
+     * @return Liste des véhicules filtrés via l'itérateur
+     */
+    @GetMapping(path = "/vehicules/catalogue/iterate")
+    public @ResponseBody ResponseEntity<?> iterateCatalogue(
+            @RequestParam(required = false) String type,
+            @RequestParam(required = false) String energie) {
+
+        // Créer le catalogue (ConcreteAggregate)
+        Catalogue catalogue = new CatalogueVehicule();
+
+        // Charger les véhicules depuis la base et les ajouter au catalogue
+        List<Vehicule> allVehicules = repository.findAll();
+        for (Vehicule v : allVehicules) {
+            catalogue.addVehicule(v);
+        }
+
+        // Obtenir l'itérateur (ConcreteIterator)
+        VehiculeIterator iterator = catalogue.getIterator();
+
+        // Parcourir avec l'itérateur et filtrer
+        // IMPORTANT: On utilise des Maps pour ne pas modifier les entités (éviter persistence en BD)
+        List<Map<String, Object>> result = new ArrayList<>();
+
+        while (iterator.hasNext()) {
+            Vehicule v = (Vehicule) iterator.next();
+
+            // Appliquer les filtres si spécifiés
+            boolean matchType = (type == null || v.getType().name().equalsIgnoreCase(type));
+            boolean matchEnergie = (energie == null || v.getEngine().name().equalsIgnoreCase(energie));
+
+            if (matchType && matchEnergie) {
+                Map<String, Object> vehiculeData = new HashMap<>();
+
+                // Copier les données de base
+                vehiculeData.put("idVehicule", v.getIdVehicule());
+                vehiculeData.put("marque", v.getMarque());
+                vehiculeData.put("model", v.getModel());
+                vehiculeData.put("annee", v.getAnnee());
+                vehiculeData.put("type", v.getType());
+                vehiculeData.put("engine", v.getEngine());
+                vehiculeData.put("images", v.getImages());
+                vehiculeData.put("stock", v.getStock());
+                vehiculeData.put("solde", v.isSolde());
+                vehiculeData.put("facteurReduction", v.getFacteurReduction());
+
+                // Appliquer le Decorator si en solde (sans modifier l'entité)
+                if (v.isSolde()) {
+                    VehiculeComposant vehiculeDecore = new DecorateurPromo(new VehiculeDeBase(v));
+                    vehiculeData.put("prixBase", vehiculeDecore.getPrix());
+                    vehiculeData.put("nom", vehiculeDecore.getNom());
+                    vehiculeData.put("prixOriginal", v.getPrixBase());
+                    vehiculeData.put("decorated", true);
+                } else {
+                    vehiculeData.put("prixBase", v.getPrixBase());
+                    vehiculeData.put("nom", v.getNom());
+                    vehiculeData.put("decorated", false);
+                }
+
+                result.add(vehiculeData);
             }
         }
-        return ResponseEntity.ok(vehicules);
+
+        // Retourner avec métadonnées
+        Map<String, Object> response = new HashMap<>();
+        response.put("pattern", "Iterator + Decorator");
+        response.put("total", result.size());
+        response.put("filtres", Map.of(
+            "type", type != null ? type : "tous",
+            "energie", energie != null ? energie : "tous"
+        ));
+        response.put("vehicules", result);
+
+        return ResponseEntity.ok(response);
     }
 
 //    @PostMapping(path = "/vehicules")

@@ -43,8 +43,13 @@ public class SecurityConfig {
 
                 // Public endpoints - Catalogue (lecture seule)
                 .requestMatchers(HttpMethod.GET, "/api/vehicules/**").permitAll()
+                .requestMatchers(HttpMethod.GET, "/vehicules/**").permitAll()
+                .requestMatchers(HttpMethod.GET, "/vehicules").permitAll()
                 .requestMatchers(HttpMethod.GET, "/api/catalogue/**").permitAll()
                 .requestMatchers(HttpMethod.GET, "/api/options/**").permitAll()
+
+                // Public endpoints - Forms (Bridge Pattern)
+                .requestMatchers(HttpMethod.GET, "/api/form/**").permitAll()
 
                 // Public endpoints - Static files
                 .requestMatchers("/uploads/**").permitAll()
@@ -56,7 +61,14 @@ public class SecurityConfig {
                 // Admin only - CRUD vehicules (sauf GET)
                 .requestMatchers(HttpMethod.POST, "/api/vehicules/**").hasRole("ADMIN")
                 .requestMatchers(HttpMethod.PUT, "/api/vehicules/**").hasRole("ADMIN")
+                .requestMatchers(HttpMethod.PATCH, "/api/vehicules/**").hasRole("ADMIN")
                 .requestMatchers(HttpMethod.DELETE, "/api/vehicules/**").hasRole("ADMIN")
+                // Custom endpoints (sans /api prefix)
+                .requestMatchers(HttpMethod.POST, "/vehicules/").hasRole("ADMIN")
+                .requestMatchers(HttpMethod.POST, "/vehicules/**").hasRole("ADMIN")
+                .requestMatchers(HttpMethod.PUT, "/vehicules/**").hasRole("ADMIN")
+                .requestMatchers(HttpMethod.PATCH, "/vehicules/**").hasRole("ADMIN")
+                .requestMatchers(HttpMethod.DELETE, "/vehicules/**").hasRole("ADMIN")
 
                 // Admin only - Gestion clients/societes
                 .requestMatchers(HttpMethod.GET, "/api/clients").hasRole("ADMIN")
