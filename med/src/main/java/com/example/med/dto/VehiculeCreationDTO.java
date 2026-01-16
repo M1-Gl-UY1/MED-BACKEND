@@ -1,13 +1,44 @@
 package com.example.med.dto;
 
+import lombok.Data;
+import java.util.List;
+
+@Data
 public class VehiculeCreationDTO {
-    private String energie;
-    private String type;
+    // Type de véhicule (pour Abstract Factory)
+    private String energie;     // ESSENCE ou ELECTRIQUE
+    private String type;        // AUTOMOBILE ou SCOOTER
 
-    // Getters et Setters
-    public String getEnergie() { return energie; }
-    public void setEnergie(String energie) { this.energie = energie; }
+    // Informations de base
+    private String nom;
+    private String marque;
+    private String model;
+    private Integer annee;
+    private Double prixBase;
+    private String description;
 
-    public String getType() { return type; }
-    public void setType(String type) { this.type = type; }
+    // Caractéristiques techniques
+    private String puissance;
+    private String transmission;
+    private String carburant;
+    private String consommation;
+    private String acceleration;
+    private String vitesseMax;
+
+    // Couleurs disponibles
+    private List<String> couleurs;
+
+    // Options (IDs des options à associer)
+    private List<Long> optionIds;
+
+    // Stock
+    private Integer quantiteStock;
+
+    // Statuts
+    private Boolean nouveau;
+    private Boolean solde;
+    private Double facteurReduction;
+
+    // Images (URLs)
+    private List<String> imageUrls;
 }

@@ -9,10 +9,15 @@ import com.example.med.repository.CommandeRepository;
 import com.example.med.repository.VehiculeRepository;
 import com.example.med.service.commande.CommandeService;
 import org.springframework.http.ResponseEntity;
+import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.bind.annotation.*;
+
+import java.util.Comparator;
+import java.util.List;
 
 @RestController
 @RequestMapping("/api/commandes")
+@Transactional  // Garder la session Hibernate ouverte pour les collections lazy-loaded
 public class CommandeController {
 
     private final CommandeService commandeService;
@@ -25,7 +30,46 @@ public class CommandeController {
         this.vehiculeRepository = vehiculeRepository;
     }
 
-    // Fsctory
+    /**
+     * Liste toutes les commandes
+     */
+    @GetMapping
+    public ResponseEntity<List<Commande>> getAllCommandes() {
+        List<Commande> commandes = commandeRepository.findAll();
+        // Trier par date décroissante
+        commandes.sort((c1, c2) -> {
+            if (c1.getDate() == null) return 1;
+            if (c2.getDate() == null) return -1;
+            return c2.getDate().compareTo(c1.getDate());
+        });
+        return ResponseEntity.ok(commandes);
+    }
+
+    /**
+     * Récupère une commande par son ID
+     */
+    @GetMapping("/{id}")
+    public ResponseEntity<Commande> getCommandeById(@PathVariable Long id) {
+        return commandeRepository.findById(id)
+            .map(ResponseEntity::ok)
+            .orElse(ResponseEntity.notFound().build());
+    }
+
+    /**
+     * Récupère les commandes récentes
+     */
+    @GetMapping("/recentes")
+    public ResponseEntity<List<Commande>> getCommandesRecentes(@RequestParam(defaultValue = "5") int limit) {
+        List<Commande> commandes = commandeRepository.findAll();
+        commandes.sort((c1, c2) -> {
+            if (c1.getDate() == null) return 1;
+            if (c2.getDate() == null) return -1;
+            return c2.getDate().compareTo(c1.getDate());
+        });
+        return ResponseEntity.ok(commandes.stream().limit(limit).toList());
+    }
+
+    // Factory
     @PostMapping
     public ResponseEntity <Commande> creerCommande(@RequestParam String typeCommande) {
         Commande commande = commandeService.creerCommande(typeCommande);

@@ -1,5 +1,6 @@
 package com.example.med.model.commande_et_document;
 
+import com.fasterxml.jackson.annotation.JsonBackReference;
 import jakarta.persistence.*;
 import lombok.Data;
 
@@ -21,5 +22,6 @@ public class Document {
 
     @ManyToOne
     @JoinColumn(name = "id_liasse_de_documents")
+    @JsonBackReference
     private LiasseDocuments liasse;
 }

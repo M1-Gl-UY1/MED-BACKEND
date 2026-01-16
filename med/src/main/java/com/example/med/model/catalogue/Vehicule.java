@@ -34,6 +34,26 @@ public class Vehicule implements Sujet {
     private int annee;
     private String imageUrl;
 
+    @Column(columnDefinition = "TEXT")
+    private String description;
+
+    // Indicateur nouveau véhicule
+    private boolean nouveau;
+
+    // Caractéristiques techniques
+    private String puissance;           // ex: "340 ch"
+    private String transmission;        // ex: "Automatique 8 vitesses"
+    private String carburant;           // ex: "Essence", "Électrique"
+    private String consommation;        // ex: "9.5 L/100km"
+    private String acceleration;        // ex: "5.5s (0-100 km/h)"
+    private String vitesseMax;          // ex: "243 km/h"
+
+    // Couleurs disponibles (stockées en JSON)
+    @ElementCollection
+    @CollectionTable(name = "vehicule_couleurs", joinColumns = @JoinColumn(name = "id_vehicule"))
+    @Column(name = "couleur")
+    private List<String> couleurs = new ArrayList<>();
+
     @OneToMany(mappedBy = "vehicule", cascade = CascadeType.ALL, orphanRemoval = true)
     @OrderBy("ordreAffichage ASC")
     private List<ImageVehicule> images = new ArrayList<>();
@@ -50,6 +70,15 @@ public class Vehicule implements Sujet {
     @ManyToOne
     @JoinColumn(name = "id_stock")
     private Stock stock;
+
+    // Options disponibles pour ce véhicule
+    @ManyToMany
+    @JoinTable(
+        name = "vehicule_options",
+        joinColumns = @JoinColumn(name = "id_vehicule"),
+        inverseJoinColumns = @JoinColumn(name = "id_option")
+    )
+    private List<Option> options = new ArrayList<>();
 
 
     // ============================================

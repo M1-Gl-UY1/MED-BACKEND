@@ -2,11 +2,17 @@ package com.example.med.controller.catalogue;
 
 import com.example.med.dto.VehiculeCreationDTO;
 import com.example.med.model.catalogue.ImageVehicule;
+import com.example.med.model.catalogue.Option;
+import com.example.med.model.catalogue.Stock;
+import com.example.med.model.catalogue.TypeEngine;
+import com.example.med.model.catalogue.TypeVehicule;
 import com.example.med.model.catalogue.Vehicule;
 import com.example.med.outil.decorator.DecorateurPromo;
 import com.example.med.outil.decorator.VehiculeComposant;
 import com.example.med.outil.decorator.VehiculeDeBase;
 import com.example.med.repository.ImageVehiculeRepository;
+import com.example.med.repository.OptionRepository;
+import com.example.med.repository.StockRepository;
 import com.example.med.repository.VehiculeRepository;
 import com.example.med.service.storage.FileStorageService;
 import com.example.med.service.vehicule.VehiculeService;
@@ -15,6 +21,7 @@ import lombok.RequiredArgsConstructor;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.rest.webmvc.RepositoryRestController;
 import org.springframework.http.ResponseEntity;
+import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.multipart.MultipartFile;
 
@@ -26,21 +33,106 @@ import java.util.Optional;
 @RestController
 @RepositoryRestController // Indique que ce contrôleur remplace les routes Data REST
 @RequiredArgsConstructor
+@Transactional  // Garder la session Hibernate ouverte pour les collections lazy-loaded
 public class VehiculeController {
 
     private final VehiculeRepository repository;
     private final ImageVehiculeRepository imageRepository;
     private final FileStorageService fileStorageService;
+    private final StockRepository stockRepository;
+    private final OptionRepository optionRepository;
 
     @Autowired
     private VehiculeService vehiculeService;
 
     @PostMapping("/vehicules/")
-    public ResponseEntity <String>createVehicule(@RequestBody VehiculeCreationDTO dto) {
-        //TODO: process POST request
+    public ResponseEntity<Vehicule> createVehicule(@RequestBody VehiculeCreationDTO dto) {
+        // Créer le véhicule avec les données du DTO
+        Vehicule vehicule = new Vehicule();
 
-        String resultat = vehiculeService.createVehicule(dto.getEnergie(), dto.getType()); //energie electrique or essence and type auto or scooter from dto
-        return ResponseEntity.ok("Vehicule created successfully");
+        // Définir l'énergie (engine)
+        if (dto.getEnergie() != null) {
+            try {
+                vehicule.setEngine(TypeEngine.valueOf(dto.getEnergie().toUpperCase()));
+            } catch (IllegalArgumentException e) {
+                vehicule.setEngine(TypeEngine.ESSENCE);
+            }
+        } else {
+            vehicule.setEngine(TypeEngine.ESSENCE);
+        }
+
+        // Définir le type de véhicule
+        if (dto.getType() != null) {
+            try {
+                String typeStr = dto.getType().toUpperCase();
+                if (typeStr.equals("AUTO")) typeStr = "AUTOMOBILE";
+                vehicule.setType(TypeVehicule.valueOf(typeStr));
+            } catch (IllegalArgumentException e) {
+                vehicule.setType(TypeVehicule.AUTOMOBILE);
+            }
+        } else {
+            vehicule.setType(TypeVehicule.AUTOMOBILE);
+        }
+
+        // Informations de base
+        vehicule.setNom(dto.getNom() != null ? dto.getNom() : "Nouveau véhicule");
+        vehicule.setMarque(dto.getMarque() != null ? dto.getMarque() : "");
+        vehicule.setModel(dto.getModel() != null ? dto.getModel() : "");
+        vehicule.setAnnee(dto.getAnnee() != null ? dto.getAnnee() : java.time.Year.now().getValue());
+        vehicule.setPrixBase(dto.getPrixBase() != null ? dto.getPrixBase() : 0);
+        vehicule.setDescription(dto.getDescription());
+
+        // Caractéristiques techniques
+        vehicule.setPuissance(dto.getPuissance());
+        vehicule.setTransmission(dto.getTransmission());
+        vehicule.setCarburant(dto.getCarburant());
+        vehicule.setConsommation(dto.getConsommation());
+        vehicule.setAcceleration(dto.getAcceleration());
+        vehicule.setVitesseMax(dto.getVitesseMax());
+
+        // Couleurs disponibles
+        if (dto.getCouleurs() != null && !dto.getCouleurs().isEmpty()) {
+            vehicule.setCouleurs(new ArrayList<>(dto.getCouleurs()));
+        }
+
+        // Statuts
+        vehicule.setNouveau(dto.getNouveau() != null ? dto.getNouveau() : true);
+        vehicule.setSolde(dto.getSolde() != null ? dto.getSolde() : false);
+        vehicule.setFacteurReduction(dto.getFacteurReduction() != null ? dto.getFacteurReduction() : 0);
+
+        // Sauvegarder le véhicule d'abord
+        Vehicule saved = repository.save(vehicule);
+
+        // Créer un stock initial si quantité spécifiée
+        if (dto.getQuantiteStock() != null && dto.getQuantiteStock() > 0) {
+            Stock stock = new Stock();
+            stock.setQuantite(dto.getQuantiteStock());
+            stock.setDateEntre(java.time.LocalDate.now());
+            stock = stockRepository.save(stock);
+            saved.setStock(stock);
+        }
+
+        // Associer les options
+        if (dto.getOptionIds() != null && !dto.getOptionIds().isEmpty()) {
+            List<Option> options = optionRepository.findAllById(dto.getOptionIds());
+            saved.setOptions(new ArrayList<>(options));
+        }
+
+        // Ajouter les images (URLs)
+        if (dto.getImageUrls() != null && !dto.getImageUrls().isEmpty()) {
+            boolean isFirst = true;
+            for (String url : dto.getImageUrls()) {
+                ImageVehicule image = new ImageVehicule(url);
+                image.setEstPrincipale(isFirst);
+                saved.ajouterImage(image);
+                isFirst = false;
+            }
+        }
+
+        // Sauvegarder avec toutes les relations
+        saved = repository.save(saved);
+
+        return ResponseEntity.created(URI.create("/vehicules/" + saved.getIdVehicule())).body(saved);
     }
 
     // Cette méthode va INTERCEPTER le GET /api/vehicules par défaut
