@@ -5,14 +5,22 @@ services:
     dockerfilePath: ./Dockerfile
     dockerContext: .
     plan: free
-    healthCheckPath: /api
+    healthCheckPath: /actuator/health
     envVars:
       - key: SPRING_PROFILES_ACTIVE
         value: prod
-      - key: DATABASE_URL
+      - key: DATABASE_HOST
         fromDatabase:
           name: med-database
-          property: connectionString
+          property: host
+      - key: DATABASE_PORT
+        fromDatabase:
+          name: med-database
+          property: port
+      - key: DATABASE_NAME
+        fromDatabase:
+          name: med-database
+          property: database
       - key: DATABASE_USERNAME
         fromDatabase:
           name: med-database
