@@ -162,21 +162,13 @@ public class VehiculeController {
             vehiculeData.put("solde", v.isSolde());
             vehiculeData.put("facteurReduction", v.getFacteurReduction());
 
-            // Prix et nom originaux (stockés en BD)
+            // Prix et nom - toujours retourner les valeurs originales
+            // Le frontend gère l'affichage des réductions avec facteurReduction
+            vehiculeData.put("prixBase", v.getPrixBase());
+            vehiculeData.put("nom", v.getNom());
             vehiculeData.put("prixOriginal", v.getPrixBase());
             vehiculeData.put("nomOriginal", v.getNom());
-
-            // Si le véhicule est en solde, appliquer le Pattern Decorator
-            if (v.isSolde()) {
-                VehiculeComposant vehiculeDecore = new DecorateurPromo(new VehiculeDeBase(v));
-                vehiculeData.put("prixBase", vehiculeDecore.getPrix());
-                vehiculeData.put("nom", vehiculeDecore.getNom());
-                vehiculeData.put("decorated", true);
-            } else {
-                vehiculeData.put("prixBase", v.getPrixBase());
-                vehiculeData.put("nom", v.getNom());
-                vehiculeData.put("decorated", false);
-            }
+            vehiculeData.put("decorated", false);
 
             response.add(vehiculeData);
         }
@@ -221,17 +213,11 @@ public class VehiculeController {
                 vehiculeData.put("solde", v.isSolde());
                 vehiculeData.put("facteurReduction", v.getFacteurReduction());
 
-                if (v.isSolde()) {
-                    VehiculeComposant vehiculeDecore = new DecorateurPromo(new VehiculeDeBase(v));
-                    vehiculeData.put("prixBase", vehiculeDecore.getPrix());
-                    vehiculeData.put("nom", vehiculeDecore.getNom());
-                    vehiculeData.put("prixOriginal", v.getPrixBase());
-                    vehiculeData.put("decorated", true);
-                } else {
-                    vehiculeData.put("prixBase", v.getPrixBase());
-                    vehiculeData.put("nom", v.getNom());
-                    vehiculeData.put("decorated", false);
-                }
+                // Prix et nom - toujours retourner les valeurs originales
+                vehiculeData.put("prixBase", v.getPrixBase());
+                vehiculeData.put("nom", v.getNom());
+                vehiculeData.put("prixOriginal", v.getPrixBase());
+                vehiculeData.put("decorated", false);
 
                 result.add(vehiculeData);
             }
@@ -275,34 +261,67 @@ public class VehiculeController {
             vehiculeData.put("nouveau", v.isNouveau());
             vehiculeData.put("solde", v.isSolde());
             vehiculeData.put("facteurReduction", v.getFacteurReduction());
+            // Prix et nom - toujours retourner les valeurs originales
+            vehiculeData.put("prixBase", v.getPrixBase());
+            vehiculeData.put("nom", v.getNom());
             vehiculeData.put("prixOriginal", v.getPrixBase());
             vehiculeData.put("nomOriginal", v.getNom());
-
-            if (v.isSolde()) {
-                VehiculeComposant decore = new DecorateurPromo(new VehiculeDeBase(v));
-                vehiculeData.put("nom", decore.getNom());
-                vehiculeData.put("prixBase", decore.getPrix());
-                vehiculeData.put("decorated", true);
-            } else {
-                vehiculeData.put("nom", v.getNom());
-                vehiculeData.put("prixBase", v.getPrixBase());
-                vehiculeData.put("decorated", false);
-            }
+            vehiculeData.put("decorated", false);
 
             return ResponseEntity.ok(vehiculeData);
         }).orElse(ResponseEntity.notFound().build());
     }
 
     @PutMapping("/vehicules/{id}")
-    public ResponseEntity<?> updateVehicule(@PathVariable Long id, @RequestBody Vehicule details) {
+    public ResponseEntity<?> updateVehicule(@PathVariable Long id, @RequestBody Map<String, Object> details) {
         return repository.findById(id).map(existing -> {
-            existing.setNom(details.getNom());
-            existing.setMarque(details.getMarque());
-            existing.setModel(details.getModel());
-            existing.setPrixBase(details.getPrixBase());
-            existing.setAnnee(details.getAnnee());
-            existing.setEngine(details.getEngine());
-            existing.setType(details.getType());
+            // Informations de base
+            if (details.containsKey("nom")) {
+                String nom = (String) details.get("nom");
+                // Nettoyer le nom des décorations accumulées [PROMO -XX%]
+                nom = nom.replaceAll("\\s*\\[PROMO -\\d+%\\]", "").trim();
+                existing.setNom(nom);
+            }
+            if (details.containsKey("marque")) existing.setMarque((String) details.get("marque"));
+            if (details.containsKey("model")) existing.setModel((String) details.get("model"));
+            if (details.containsKey("prixBase")) {
+                Object prix = details.get("prixBase");
+                existing.setPrixBase(prix instanceof Number ? ((Number) prix).doubleValue() : 0);
+            }
+            if (details.containsKey("annee")) {
+                Object annee = details.get("annee");
+                existing.setAnnee(annee instanceof Number ? ((Number) annee).intValue() : existing.getAnnee());
+            }
+            if (details.containsKey("description")) existing.setDescription((String) details.get("description"));
+
+            // Caractéristiques techniques
+            if (details.containsKey("puissance")) existing.setPuissance((String) details.get("puissance"));
+            if (details.containsKey("transmission")) existing.setTransmission((String) details.get("transmission"));
+            if (details.containsKey("carburant")) existing.setCarburant((String) details.get("carburant"));
+            if (details.containsKey("consommation")) existing.setConsommation((String) details.get("consommation"));
+            if (details.containsKey("acceleration")) existing.setAcceleration((String) details.get("acceleration"));
+            if (details.containsKey("vitesseMax")) existing.setVitesseMax((String) details.get("vitesseMax"));
+
+            // Couleurs
+            if (details.containsKey("couleurs")) {
+                @SuppressWarnings("unchecked")
+                List<String> couleurs = (List<String>) details.get("couleurs");
+                existing.setCouleurs(new ArrayList<>(couleurs));
+            }
+
+            // Statuts
+            if (details.containsKey("nouveau")) {
+                Object nouveau = details.get("nouveau");
+                existing.setNouveau(nouveau instanceof Boolean ? (Boolean) nouveau : false);
+            }
+            if (details.containsKey("solde")) {
+                Object solde = details.get("solde");
+                existing.setSolde(solde instanceof Boolean ? (Boolean) solde : false);
+            }
+            if (details.containsKey("facteurReduction")) {
+                Object facteur = details.get("facteurReduction");
+                existing.setFacteurReduction(facteur instanceof Number ? ((Number) facteur).doubleValue() : 0);
+            }
 
             repository.save(existing);
             return ResponseEntity.ok(existing);
