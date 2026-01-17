@@ -351,6 +351,91 @@ public class VehiculeController {
     }
 
     // ============================================
+    // Recherche full-text
+    // ============================================
+
+    /**
+     * Recherche full-text sur les véhicules
+     * GET /vehicules/search?q=tesla&type=AUTOMOBILE&engine=ELECTRIQUE&marque=Tesla&prixMin=0&prixMax=100000&solde=true
+     */
+    @GetMapping("/vehicules/search")
+    @Transactional(readOnly = true)
+    public ResponseEntity<?> searchVehicules(
+            @RequestParam(value = "q", required = false) String query,
+            @RequestParam(value = "type", required = false) String type,
+            @RequestParam(value = "engine", required = false) String engine,
+            @RequestParam(value = "marque", required = false) String marque,
+            @RequestParam(value = "prixMin", required = false) Double prixMin,
+            @RequestParam(value = "prixMax", required = false) Double prixMax,
+            @RequestParam(value = "solde", required = false) Boolean solde) {
+
+        TypeVehicule typeVehicule = null;
+        TypeEngine typeEngine = null;
+
+        if (type != null && !type.isEmpty()) {
+            try {
+                typeVehicule = TypeVehicule.valueOf(type.toUpperCase());
+            } catch (IllegalArgumentException ignored) {}
+        }
+
+        if (engine != null && !engine.isEmpty()) {
+            try {
+                typeEngine = TypeEngine.valueOf(engine.toUpperCase());
+            } catch (IllegalArgumentException ignored) {}
+        }
+
+        List<Vehicule> vehicules = repository.searchWithFilters(
+                query, typeVehicule, typeEngine, marque, prixMin, prixMax, solde
+        );
+
+        List<Map<String, Object>> response = new ArrayList<>();
+        for (Vehicule v : vehicules) {
+            Map<String, Object> vehiculeData = new HashMap<>();
+            vehiculeData.put("idVehicule", v.getIdVehicule());
+            vehiculeData.put("nom", v.getNom());
+            vehiculeData.put("marque", v.getMarque());
+            vehiculeData.put("model", v.getModel());
+            vehiculeData.put("annee", v.getAnnee());
+            vehiculeData.put("type", v.getType());
+            vehiculeData.put("engine", v.getEngine());
+            vehiculeData.put("prixBase", v.getPrixBase());
+            vehiculeData.put("description", v.getDescription());
+            vehiculeData.put("images", v.getImages());
+            vehiculeData.put("stock", v.getStock());
+            vehiculeData.put("solde", v.isSolde());
+            vehiculeData.put("facteurReduction", v.getFacteurReduction());
+            vehiculeData.put("nouveau", v.isNouveau());
+            vehiculeData.put("prixOriginal", v.getPrixBase());
+            vehiculeData.put("nomOriginal", v.getNom());
+            response.add(vehiculeData);
+        }
+
+        Map<String, Object> result = new HashMap<>();
+        result.put("total", response.size());
+        result.put("query", query);
+        result.put("filters", Map.of(
+                "type", type != null ? type : "",
+                "engine", engine != null ? engine : "",
+                "marque", marque != null ? marque : "",
+                "prixMin", prixMin != null ? prixMin : "",
+                "prixMax", prixMax != null ? prixMax : "",
+                "solde", solde != null ? solde : ""
+        ));
+        result.put("vehicules", response);
+
+        return ResponseEntity.ok(result);
+    }
+
+    /**
+     * Récupérer les marques disponibles
+     */
+    @GetMapping("/vehicules/marques")
+    @Transactional(readOnly = true)
+    public ResponseEntity<List<String>> getMarques() {
+        return ResponseEntity.ok(repository.findDistinctMarques());
+    }
+
+    // ============================================
     // Gestion des images multiples
     // ============================================
 
