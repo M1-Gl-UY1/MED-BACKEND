@@ -128,11 +128,11 @@ Au demarrage, un compte admin est cree automatiquement:
 
 ### Prerequis
 
-1. Java 25+
+1. Java 21+
 2. PostgreSQL avec une base `med_db`
 3. Maven
 
-### Lancer le serveur
+### Lancer le serveur en local
 
 ```bash
 cd MED-BACKEND/med
@@ -147,6 +147,39 @@ Dans les logs, vous devriez voir:
 ```
 Compte administrateur cree: admin-med@gmail.com
 ```
+
+## Deploiement Production (VPS Contabo)
+
+Le backend est deploye sur un VPS Contabo avec CI/CD GitHub Actions.
+
+**URL Production:** `http://84.247.183.206:9085`
+
+### Architecture de deploiement
+
+- **Docker Compose** avec PostgreSQL conteneurise
+- **CI/CD** via GitHub Actions (push sur `main`)
+- **Health check** sur `/actuator/health`
+
+### Fichiers de deploiement
+
+- `docker-compose.prod.yml` - Configuration Docker Compose
+- `Dockerfile.prod` - Dockerfile optimise (JAR pre-build)
+- `.github/workflows/deploy.yml` - Pipeline CI/CD
+- `DEPLOY.md` - Documentation complete du deploiement
+
+### Variables d'environnement (secrets GitHub)
+
+| Secret | Description |
+|--------|-------------|
+| `VPS_HOST` | IP du VPS (84.247.183.206) |
+| `VPS_USER` | Utilisateur SSH |
+| `VPS_PASSWORD` | Mot de passe SSH |
+| `POSTGRES_PASSWORD` | Mot de passe PostgreSQL |
+| `JWT_SECRET` | Cle secrete JWT |
+| `MAIL_PASSWORD` | Mot de passe email |
+| `CLOUDINARY_CLOUD_NAME` | Cloudinary cloud name |
+| `CLOUDINARY_API_KEY` | Cloudinary API key |
+| `CLOUDINARY_API_SECRET` | Cloudinary API secret |
 
 ## Design Patterns Implementes
 
