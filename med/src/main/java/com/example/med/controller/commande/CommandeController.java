@@ -253,13 +253,62 @@ public class CommandeController {
         return ResponseEntity.ok(montant);
     }
 
-    // VALIDATION COMMANDE
-    @PostMapping("/{id}/valider")
-    public ResponseEntity<String> valider(@PathVariable Long id) {
-        Commande commande = commandeRepository.findById(id).orElseThrow(() -> new RuntimeException("Commande introuvable"));
+    // VALIDATION COMMANDE (Command Pattern - Executer)
+    @PostMapping("/{id}/executer")
+    public ResponseEntity<Commande> executer(@PathVariable Long id) {
+        Commande commande = commandeRepository.findById(id)
+            .orElseThrow(() -> new RuntimeException("Commande introuvable"));
+
         commandeService.validerCommande(commande);
-        commandeRepository.save(commande);
-        return ResponseEntity.ok("Commande validee");
+        commande = commandeRepository.save(commande);
+
+        // OBSERVER PATTERN - Notifier le client du changement de statut
+        if (commande.getUtilisateur() != null) {
+            notificationService.notifierStatutCommande(
+                commande.getUtilisateur().getIdUtilisateur(),
+                getDestinataireType(commande.getUtilisateur()),
+                commande.getReference(),
+                "validée"
+            );
+        }
+
+        return ResponseEntity.ok(commande);
+    }
+
+    // MARQUER COMME LIVREE
+    @PostMapping("/{id}/livrer")
+    public ResponseEntity<Commande> marquerLivree(@PathVariable Long id) {
+        Commande commande = commandeRepository.findById(id)
+            .orElseThrow(() -> new RuntimeException("Commande introuvable"));
+
+        if (commande.getStatut() != StatutPanier.VALIDEE) {
+            return ResponseEntity.badRequest().build();
+        }
+
+        commande.setStatut(StatutPanier.CONVERTI); // CONVERTI = Livrée dans ce contexte
+        commande = commandeRepository.save(commande);
+
+        // OBSERVER PATTERN - Notifier le client de la livraison
+        if (commande.getUtilisateur() != null) {
+            notificationService.notifierStatutCommande(
+                commande.getUtilisateur().getIdUtilisateur(),
+                getDestinataireType(commande.getUtilisateur()),
+                commande.getReference(),
+                "livrée"
+            );
+        }
+
+        return ResponseEntity.ok(commande);
+    }
+
+    // Helper pour determiner le type de destinataire
+    private com.example.med.model.notification.DestinataireType getDestinataireType(Utilisateur utilisateur) {
+        if (utilisateur instanceof com.example.med.model.utilisateur.Client) {
+            return com.example.med.model.notification.DestinataireType.CLIENT;
+        } else if (utilisateur instanceof com.example.med.model.utilisateur.Societe) {
+            return com.example.med.model.notification.DestinataireType.SOCIETE;
+        }
+        return com.example.med.model.notification.DestinataireType.CLIENT;
     }
 
     // COMMAND PATTERN
