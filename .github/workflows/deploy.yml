@@ -36,7 +36,7 @@ jobs:
           host: ${{ secrets.VPS_HOST }}
           username: ${{ secrets.VPS_USER }}
           password: ${{ secrets.VPS_PASSWORD }}
-          source: "med/docker-compose.prod.yml,med/Dockerfile,med/target/*.jar"
+          source: "med/docker-compose.prod.yml,med/Dockerfile.prod,med/target/*.jar"
           target: ${{ env.DEPLOY_PATH }}
           strip_components: 1
 

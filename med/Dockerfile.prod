@@ -1,0 +1,30 @@
+# Dockerfile pour déploiement (utilise le JAR pré-compilé)
+FROM eclipse-temurin:21-jre-alpine
+
+WORKDIR /app
+
+# Créer un utilisateur non-root
+RUN addgroup -S spring && adduser -S spring -G spring
+
+# Créer le dossier uploads
+RUN mkdir -p /app/uploads/images && chown -R spring:spring /app
+
+# Copier le JAR pré-compilé
+COPY target/*.jar app.jar
+
+# Changer vers l'utilisateur non-root
+USER spring:spring
+
+# Exposer le port
+EXPOSE 8085
+
+# Variables d'environnement par défaut
+ENV JAVA_OPTS="-Xmx512m -Xms256m"
+ENV SPRING_PROFILES_ACTIVE=prod
+
+# Health check
+HEALTHCHECK --interval=30s --timeout=10s --start-period=60s --retries=3 \
+  CMD wget -q --spider http://localhost:8085/actuator/health || exit 1
+
+# Démarrer l'application
+ENTRYPOINT ["sh", "-c", "java $JAVA_OPTS -Dspring.profiles.active=${SPRING_PROFILES_ACTIVE} -jar app.jar"]
