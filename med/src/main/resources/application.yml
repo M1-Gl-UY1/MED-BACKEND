@@ -25,10 +25,30 @@ spring:
     rest:
       base-path: /api
 
+  # Configuration Email (Gmail SMTP)
+  mail:
+    host: smtp.gmail.com
+    port: 587
+    username: tiomelajorel@gmail.com
+    password: ${MAIL_PASSWORD:axgawninapjjxvfm}
+    properties:
+      mail:
+        smtp:
+          auth: true
+          starttls:
+            enable: true
+            required: true
+          connectiontimeout: 5000
+          timeout: 5000
+          writetimeout: 5000
+
 # Configuration personnalisée pour l'upload
 app:
   upload:
     dir: uploads/images
+  mail:
+    from: tiomelajorel@gmail.com
+    from-name: MED Auto
 
 # Configuration JWT
 jwt:
