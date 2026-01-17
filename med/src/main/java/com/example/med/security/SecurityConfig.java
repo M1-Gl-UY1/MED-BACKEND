@@ -37,6 +37,9 @@ public class SecurityConfig {
                 // Health check endpoint
                 .requestMatchers("/actuator/health").permitAll()
 
+                // WebSocket endpoint
+                .requestMatchers("/ws/**").permitAll()
+
                 // Public endpoints - Authentication
                 .requestMatchers("/api/auth/**").permitAll()
 
@@ -109,10 +112,12 @@ public class SecurityConfig {
     @Bean
     public CorsConfigurationSource corsConfigurationSource() {
         CorsConfiguration configuration = new CorsConfiguration();
-        configuration.setAllowedOrigins(List.of("*"));
+        // Use allowedOriginPatterns instead of allowedOrigins to support credentials with wildcards
+        configuration.setAllowedOriginPatterns(List.of("*"));
         configuration.setAllowedMethods(Arrays.asList("GET", "POST", "PUT", "PATCH", "DELETE", "OPTIONS"));
         configuration.setAllowedHeaders(List.of("*"));
         configuration.setExposedHeaders(List.of("Authorization"));
+        configuration.setAllowCredentials(true);
 
         UrlBasedCorsConfigurationSource source = new UrlBasedCorsConfigurationSource();
         source.registerCorsConfiguration("/**", configuration);
