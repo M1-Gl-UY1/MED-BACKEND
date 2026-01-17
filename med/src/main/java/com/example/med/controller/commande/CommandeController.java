@@ -17,6 +17,7 @@ import com.example.med.repository.UtilisateurRepository;
 import com.example.med.repository.VehiculeRepository;
 import com.example.med.security.UserPrincipal;
 import com.example.med.service.commande.CommandeService;
+import com.example.med.service.notification.NotificationService;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.core.context.SecurityContextHolder;
@@ -39,6 +40,7 @@ public class CommandeController {
     private final UtilisateurRepository utilisateurRepository;
     private final LigneCommandeRepository ligneCommandeRepository;
     private final OptionRepository optionRepository;
+    private final NotificationService notificationService;
 
     // Taux de TVA par pays
     private static final java.util.Map<PaysLivraison, Double> TAUX_TVA = java.util.Map.of(
@@ -54,13 +56,15 @@ public class CommandeController {
             VehiculeRepository vehiculeRepository,
             UtilisateurRepository utilisateurRepository,
             LigneCommandeRepository ligneCommandeRepository,
-            OptionRepository optionRepository) {
+            OptionRepository optionRepository,
+            NotificationService notificationService) {
         this.commandeService = commandeService;
         this.commandeRepository = commandeRepository;
         this.vehiculeRepository = vehiculeRepository;
         this.utilisateurRepository = utilisateurRepository;
         this.ligneCommandeRepository = ligneCommandeRepository;
         this.optionRepository = optionRepository;
+        this.notificationService = notificationService;
     }
 
     /**
@@ -224,6 +228,13 @@ public class CommandeController {
 
         // Sauvegarder la commande finale
         commande = commandeRepository.save(commande);
+
+        // OBSERVER PATTERN - Notifier les admins de la nouvelle commande
+        String clientNom = utilisateur.getNom();
+        if (utilisateur.getPrenom() != null) {
+            clientNom = utilisateur.getPrenom() + " " + clientNom;
+        }
+        notificationService.notifierNouvelleCommande(reference, clientNom, totalTTC);
 
         return ResponseEntity.ok(commande);
     }
