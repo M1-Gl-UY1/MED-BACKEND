@@ -64,8 +64,11 @@ spring.log
 # Environnements
 # =========================
 .env
-application-*.yml
-application-*.properties
+.env.local
+.env.*.local
+# Garder application-prod.yml (pas de secrets dedans)
+application-local.yml
+application-dev.yml
 
 # =========================
 # OS

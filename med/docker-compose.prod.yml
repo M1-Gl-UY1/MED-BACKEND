@@ -1,0 +1,71 @@
+version: '3.8'
+
+services:
+  # Base de données PostgreSQL
+  postgres:
+    image: postgres:15-alpine
+    container_name: med-postgres
+    restart: unless-stopped
+    environment:
+      POSTGRES_DB: ${POSTGRES_DB:-med_db}
+      POSTGRES_USER: ${POSTGRES_USER:-med_user}
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD:-med_secure_password_2024}
+    volumes:
+      - med_postgres_data:/var/lib/postgresql/data
+    networks:
+      - med-network
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U ${POSTGRES_USER:-med_user} -d ${POSTGRES_DB:-med_db}"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+
+  # Backend Spring Boot
+  backend:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    container_name: med-backend
+    restart: unless-stopped
+    ports:
+      - "${BACKEND_PORT:-9085}:8085"
+    environment:
+      # Database
+      SPRING_DATASOURCE_URL: jdbc:postgresql://postgres:5432/${POSTGRES_DB:-med_db}
+      DATABASE_USERNAME: ${POSTGRES_USER:-med_user}
+      DATABASE_PASSWORD: ${POSTGRES_PASSWORD:-med_secure_password_2024}
+      # JWT
+      JWT_SECRET: ${JWT_SECRET:-MED-Production-Secret-Key-Must-Be-Changed-In-Production-2024}
+      # Mail
+      MAIL_PASSWORD: ${MAIL_PASSWORD:-axgawninapjjxvfm}
+      # Cloudinary
+      CLOUDINARY_CLOUD_NAME: ${CLOUDINARY_CLOUD_NAME:-}
+      CLOUDINARY_API_KEY: ${CLOUDINARY_API_KEY:-}
+      CLOUDINARY_API_SECRET: ${CLOUDINARY_API_SECRET:-}
+      # Java options
+      JAVA_OPTS: "-Xmx512m -Xms256m"
+      SPRING_PROFILES_ACTIVE: prod
+    volumes:
+      - med_uploads:/app/uploads
+    depends_on:
+      postgres:
+        condition: service_healthy
+    networks:
+      - med-network
+    healthcheck:
+      test: ["CMD", "wget", "-q", "--spider", "http://localhost:8085/actuator/health"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+      start_period: 60s
+
+volumes:
+  med_postgres_data:
+    name: med_postgres_data
+  med_uploads:
+    name: med_uploads
+
+networks:
+  med-network:
+    name: med-network
+    driver: bridge

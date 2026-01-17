@@ -1,0 +1,92 @@
+name: Deploy MED Backend
+
+on:
+  push:
+    branches: [main]
+  workflow_dispatch:
+
+env:
+  DOCKER_IMAGE: med-backend
+  DEPLOY_PATH: /opt/med-backend
+
+jobs:
+  build-and-deploy:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Set up JDK 21
+        uses: actions/setup-java@v4
+        with:
+          java-version: '21'
+          distribution: 'temurin'
+          cache: maven
+
+      - name: Build with Maven
+        run: |
+          cd med
+          chmod +x mvnw
+          ./mvnw clean package -DskipTests -B
+
+      - name: Copy files to VPS
+        uses: appleboy/scp-action@v0.1.7
+        with:
+          host: ${{ secrets.VPS_HOST }}
+          username: ${{ secrets.VPS_USER }}
+          password: ${{ secrets.VPS_PASSWORD }}
+          source: "med/docker-compose.prod.yml,med/Dockerfile,med/target/*.jar"
+          target: ${{ env.DEPLOY_PATH }}
+          strip_components: 1
+
+      - name: Deploy on VPS
+        uses: appleboy/ssh-action@v1.0.3
+        with:
+          host: ${{ secrets.VPS_HOST }}
+          username: ${{ secrets.VPS_USER }}
+          password: ${{ secrets.VPS_PASSWORD }}
+          script: |
+            cd ${{ env.DEPLOY_PATH }}
+
+            # Créer le fichier .env s'il n'existe pas
+            if [ ! -f .env ]; then
+              cat > .env << 'ENVEOF'
+            BACKEND_PORT=9085
+            POSTGRES_DB=med_db
+            POSTGRES_USER=med_user
+            POSTGRES_PASSWORD=${{ secrets.POSTGRES_PASSWORD }}
+            JWT_SECRET=${{ secrets.JWT_SECRET }}
+            MAIL_PASSWORD=${{ secrets.MAIL_PASSWORD }}
+            CLOUDINARY_CLOUD_NAME=${{ secrets.CLOUDINARY_CLOUD_NAME }}
+            CLOUDINARY_API_KEY=${{ secrets.CLOUDINARY_API_KEY }}
+            CLOUDINARY_API_SECRET=${{ secrets.CLOUDINARY_API_SECRET }}
+            ENVEOF
+            fi
+
+            # Arrêter les anciens containers
+            docker compose -f docker-compose.prod.yml down || true
+
+            # Supprimer l'ancienne image
+            docker rmi ${{ env.DOCKER_IMAGE }} || true
+
+            # Builder et démarrer
+            docker compose -f docker-compose.prod.yml up -d --build
+
+            # Nettoyer les images non utilisées
+            docker image prune -f
+
+            # Afficher les logs
+            sleep 10
+            docker compose -f docker-compose.prod.yml logs --tail=50
+
+      - name: Health check
+        uses: appleboy/ssh-action@v1.0.3
+        with:
+          host: ${{ secrets.VPS_HOST }}
+          username: ${{ secrets.VPS_USER }}
+          password: ${{ secrets.VPS_PASSWORD }}
+          script: |
+            sleep 30
+            curl -f http://localhost:9085/actuator/health || exit 1
+            echo "Deployment successful!"
