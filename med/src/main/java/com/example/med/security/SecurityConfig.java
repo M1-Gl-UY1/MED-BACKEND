@@ -37,6 +37,13 @@ public class SecurityConfig {
                 // Health check endpoint
                 .requestMatchers("/actuator/health").permitAll()
 
+                // Swagger/OpenAPI endpoints
+                .requestMatchers("/swagger-ui/**").permitAll()
+                .requestMatchers("/swagger-ui.html").permitAll()
+                .requestMatchers("/v3/api-docs/**").permitAll()
+                .requestMatchers("/swagger-resources/**").permitAll()
+                .requestMatchers("/webjars/**").permitAll()
+
                 // WebSocket endpoint
                 .requestMatchers("/ws/**").permitAll()
 
