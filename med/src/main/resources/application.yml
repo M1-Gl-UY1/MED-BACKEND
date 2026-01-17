@@ -1,11 +1,11 @@
 server:
-  port: 8085
+  port: ${PORT:8085}
 
 spring:
   datasource:
-    url: jdbc:postgresql://localhost:5432/med_db
-    username: postgres
-    password: 12345678
+    url: ${SPRING_DATASOURCE_URL:jdbc:postgresql://localhost:5432/med_db}
+    username: ${DATABASE_USERNAME:postgres}
+    password: ${DATABASE_PASSWORD:12345678}
 
   jpa:
     database-platform: org.hibernate.dialect.PostgreSQLDialect
