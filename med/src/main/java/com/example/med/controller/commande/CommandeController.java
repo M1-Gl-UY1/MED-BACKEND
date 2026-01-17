@@ -231,8 +231,11 @@ public class CommandeController {
 
         // OBSERVER PATTERN - Notifier les admins de la nouvelle commande
         String clientNom = utilisateur.getNom();
-        if (utilisateur.getPrenom() != null) {
-            clientNom = utilisateur.getPrenom() + " " + clientNom;
+        if (utilisateur instanceof com.example.med.model.utilisateur.Client) {
+            com.example.med.model.utilisateur.Client client = (com.example.med.model.utilisateur.Client) utilisateur;
+            if (client.getPrenom() != null) {
+                clientNom = client.getPrenom() + " " + clientNom;
+            }
         }
         notificationService.notifierNouvelleCommande(reference, clientNom, totalTTC);
 
