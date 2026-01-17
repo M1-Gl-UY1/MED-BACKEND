@@ -17,9 +17,8 @@ import com.example.med.repository.ImageVehiculeRepository;
 import com.example.med.repository.OptionRepository;
 import com.example.med.repository.StockRepository;
 import com.example.med.repository.VehiculeRepository;
-import com.example.med.service.storage.FileStorageService;
+import com.example.med.service.storage.StorageService;
 import com.example.med.service.vehicule.VehiculeService;
-import jakarta.servlet.http.HttpServletRequest;
 import lombok.RequiredArgsConstructor;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.rest.webmvc.RepositoryRestController;
@@ -42,7 +41,7 @@ public class VehiculeController {
 
     private final VehiculeRepository repository;
     private final ImageVehiculeRepository imageRepository;
-    private final FileStorageService fileStorageService;
+    private final StorageService storageService;
     private final StockRepository stockRepository;
     private final OptionRepository optionRepository;
 
@@ -406,13 +405,11 @@ public class VehiculeController {
     public ResponseEntity<ImageVehicule> uploadImage(
             @PathVariable Long id,
             @RequestParam("file") MultipartFile file,
-            @RequestParam(value = "principale", defaultValue = "false") boolean principale,
-            HttpServletRequest request) {
+            @RequestParam(value = "principale", defaultValue = "false") boolean principale) {
 
         return repository.findById(id).map(vehicule -> {
-            String fileName = fileStorageService.storeFile(file);
-            String baseUrl = request.getScheme() + "://" + request.getServerName() + ":" + request.getServerPort();
-            String imageUrl = fileStorageService.getFileUrl(fileName, baseUrl);
+            // storageService.storeFile retourne directement l'URL (Cloudinary ou locale)
+            String imageUrl = storageService.storeFile(file);
 
             ImageVehicule image = new ImageVehicule(imageUrl);
             image.setEstPrincipale(principale);
@@ -433,17 +430,15 @@ public class VehiculeController {
     @PostMapping("/vehicules/{id}/images/upload/batch")
     public ResponseEntity<List<ImageVehicule>> uploadImages(
             @PathVariable Long id,
-            @RequestParam("files") MultipartFile[] files,
-            HttpServletRequest request) {
+            @RequestParam("files") MultipartFile[] files) {
 
         return repository.findById(id).map(vehicule -> {
-            String baseUrl = request.getScheme() + "://" + request.getServerName() + ":" + request.getServerPort();
             List<ImageVehicule> uploadedImages = new ArrayList<>();
 
             for (int i = 0; i < files.length; i++) {
                 MultipartFile file = files[i];
-                String fileName = fileStorageService.storeFile(file);
-                String imageUrl = fileStorageService.getFileUrl(fileName, baseUrl);
+                // storageService.storeFile retourne directement l'URL (Cloudinary ou locale)
+                String imageUrl = storageService.storeFile(file);
 
                 ImageVehicule image = new ImageVehicule(imageUrl);
                 if (i == 0 && vehicule.getImages().isEmpty()) {

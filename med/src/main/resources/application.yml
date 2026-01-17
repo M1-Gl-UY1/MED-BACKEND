@@ -50,6 +50,13 @@ app:
     from: tiomelajorel@gmail.com
     from-name: MED Auto
 
+# Configuration Cloudinary
+cloudinary:
+  cloud-name: ${CLOUDINARY_CLOUD_NAME:dewpqmei7}
+  api-key: ${CLOUDINARY_API_KEY:499231485158919}
+  api-secret: ${CLOUDINARY_API_SECRET:gpN1EpG2m9I5OaVUS7dJS6F-lpI}
+  folder: ${CLOUDINARY_FOLDER:med-vehicules}
+
 # Configuration JWT
 jwt:
   secret: "MED-Application-Secret-Key-For-JWT-Token-Generation-2024-Must-Be-At-Least-256-Bits-Long"

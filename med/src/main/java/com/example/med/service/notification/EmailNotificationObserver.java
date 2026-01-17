@@ -127,7 +127,7 @@ public class EmailNotificationObserver implements NotificationObserver {
                         <a href="%s" class="btn">Voir les details</a>
                     </div>
                     <div class="footer">
-                        <p>Cet email a ete envoye automatiquement par MED Automobiles.</p>
+                        <p>Cet email a ete envoye par MED Automobiles.</p>
                         <p>Ne repondez pas a cet email.</p>
                     </div>
                 </div>

@@ -15,12 +15,16 @@ import java.util.UUID;
 
 /**
  * Service de stockage de fichiers sur le serveur local
+ * Peut être utilisé comme fallback si Cloudinary n'est pas configuré
  */
 @Service
-public class FileStorageService {
+public class FileStorageService implements StorageService {
 
     @Value("${app.upload.dir:uploads/images}")
     private String uploadDir;
+
+    @Value("${app.base-url:http://localhost:8085}")
+    private String baseUrl;
 
     private Path uploadPath;
 
@@ -37,6 +41,7 @@ public class FileStorageService {
     /**
      * Stocke un fichier et retourne son nom unique
      */
+    @Override
     public String storeFile(MultipartFile file) {
         // Nettoyer le nom du fichier
         String originalFileName = StringUtils.cleanPath(file.getOriginalFilename());
@@ -60,7 +65,8 @@ public class FileStorageService {
             Path targetLocation = uploadPath.resolve(uniqueFileName);
             Files.copy(file.getInputStream(), targetLocation, StandardCopyOption.REPLACE_EXISTING);
 
-            return uniqueFileName;
+            // Retourner l'URL complète (cohérent avec CloudinaryStorageService)
+            return getFileUrl(uniqueFileName);
         } catch (IOException e) {
             throw new RuntimeException("Erreur lors du stockage du fichier: " + originalFileName, e);
         }
@@ -69,6 +75,7 @@ public class FileStorageService {
     /**
      * Supprime un fichier
      */
+    @Override
     public boolean deleteFile(String fileName) {
         try {
             Path filePath = uploadPath.resolve(fileName).normalize();
@@ -88,8 +95,16 @@ public class FileStorageService {
     /**
      * Génère l'URL publique pour accéder au fichier
      */
-    public String getFileUrl(String fileName, String baseUrl) {
+    @Override
+    public String getFileUrl(String fileName) {
         return baseUrl + "/uploads/images/" + fileName;
+    }
+
+    /**
+     * Génère l'URL publique pour accéder au fichier (avec baseUrl personnalisé)
+     */
+    public String getFileUrl(String fileName, String customBaseUrl) {
+        return customBaseUrl + "/uploads/images/" + fileName;
     }
 
     private String getFileExtension(String fileName) {

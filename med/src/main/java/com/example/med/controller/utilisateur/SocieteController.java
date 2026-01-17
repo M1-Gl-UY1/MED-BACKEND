@@ -3,6 +3,7 @@ package com.example.med.controller.utilisateur;
 import com.example.med.dto.Auth;
 import com.example.med.model.utilisateur.Societe;
 import com.example.med.repository.SocieteRepository;
+import com.example.med.repository.UtilisateurRepository;
 import com.example.med.security.JwtUtil;
 import lombok.RequiredArgsConstructor;
 import org.mindrot.jbcrypt.BCrypt;
@@ -20,6 +21,7 @@ import java.util.Optional;
 public class SocieteController {
 
     private final SocieteRepository repository;
+    private final UtilisateurRepository utilisateurRepository;
     private final JwtUtil jwtUtil;
 
     /**
@@ -85,7 +87,13 @@ public class SocieteController {
      * Crée une nouvelle société
      */
     @PostMapping
-    public ResponseEntity<Societe> createSociete(@RequestBody Societe societe) {
+    public ResponseEntity<?> createSociete(@RequestBody Societe societe) {
+        // Verifier si l'email existe deja (dans toutes les tables utilisateur)
+        if (utilisateurRepository.existsByEmail(societe.getEmail())) {
+            return ResponseEntity.status(HttpStatus.CONFLICT)
+                .body(Map.of("message", "Cet email est deja utilise"));
+        }
+
         // Encoder le mot de passe si présent
         if (societe.getMotDePasse() != null && !societe.getMotDePasse().isEmpty()) {
             societe.setMotDePasse(BCrypt.hashpw(societe.getMotDePasse(), BCrypt.gensalt()));

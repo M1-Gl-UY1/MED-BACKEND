@@ -3,6 +3,7 @@ package com.example.med.controller.utilisateur;
 import com.example.med.dto.Auth;
 import com.example.med.model.utilisateur.Client;
 import com.example.med.repository.ClientRepository;
+import com.example.med.repository.UtilisateurRepository;
 import com.example.med.security.JwtUtil;
 import com.example.med.service.utilisateur.ClientServiceImpl;
 import lombok.RequiredArgsConstructor;
@@ -20,6 +21,7 @@ import java.util.Map;
 public class ClientController {
     private final ClientServiceImpl service;
     private final ClientRepository repository;
+    private final UtilisateurRepository utilisateurRepository;
     private final JwtUtil jwtUtil;
 
     /**
@@ -78,7 +80,13 @@ public class ClientController {
      * Cree un nouveau client
      */
     @PostMapping
-    public ResponseEntity<Client> createClient(@RequestBody Client client) {
+    public ResponseEntity<?> createClient(@RequestBody Client client) {
+        // Verifier si l'email existe deja (dans toutes les tables utilisateur)
+        if (utilisateurRepository.existsByEmail(client.getEmail())) {
+            return ResponseEntity.status(HttpStatus.CONFLICT)
+                .body(Map.of("message", "Cet email est deja utilise"));
+        }
+
         // Encoder le mot de passe avec BCrypt
         if (client.getMotDePasse() != null && !client.getMotDePasse().isEmpty()) {
             client.setMotDePasse(BCrypt.hashpw(client.getMotDePasse(), BCrypt.gensalt()));
