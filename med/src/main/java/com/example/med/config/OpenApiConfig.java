@@ -78,8 +78,11 @@ public class OpenApiConfig {
                                 .url("http://localhost:" + serverPort)
                                 .description("Serveur de développement"),
                         new Server()
-                                .url("https://med-backend.onrender.com")
-                                .description("Serveur de production")))
+                                .url("https://med-backend.duckdns.org")
+                                .description("Serveur de production (VPS HTTPS)"),
+                        new Server()
+                                .url("https://med-backend-zk8z.onrender.com")
+                                .description("Serveur de production (Render)")))
                 .addSecurityItem(new SecurityRequirement().addList("bearerAuth"))
                 .components(new Components()
                         .addSecuritySchemes("bearerAuth",
