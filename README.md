@@ -152,7 +152,7 @@ Compte administrateur cree: admin-med@gmail.com
 
 Le backend est deploye sur un VPS Contabo avec CI/CD GitHub Actions.
 
-**URL Production:** `http://84.247.183.206:9085`
+**URL Production:** `https://med-backend.duckdns.org`
 
 ### Architecture de deploiement
 
